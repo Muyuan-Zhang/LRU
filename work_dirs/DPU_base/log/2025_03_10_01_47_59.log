@@ -1,0 +1,1315 @@
+2025-03-10 01:47:59,487 - Train_video.py [line: 163] - GPU info:
+--------------------------------------------------------------------------------
+CUDA available: True
+GPU numbers: 1
+GPU INFO: [{'GPU 0': 'NVIDIA GeForce RTX 4090'}]
+--------------------------------------------------------------------------------
+
+2025-03-10 01:47:59,487 - Train_video.py [line: 169] - cfg info:
+--------------------------------------------------------------------------------
+{
+    "test_data": {
+        "type": "SixGraySimData",
+        "data_root": "test_datasets/simulation",
+        "mask_path": "test_datasets/mask/efficientsci_mask.mat",
+        "mask_shape": null
+    },
+    "resize_h": 128,
+    "resize_w": 128,
+    "train_pipeline": [
+        {
+            "type": "RandomResize"
+        },
+        {
+            "type": "RandomCrop",
+            "crop_h": 128,
+            "crop_w": 128,
+            "random_size": true
+        },
+        {
+            "type": "Flip",
+            "direction": "horizontal",
+            "flip_ratio": 0.5
+        },
+        {
+            "type": "Flip",
+            "direction": "diagonal",
+            "flip_ratio": 0.5
+        },
+        {
+            "type": "Resize",
+            "resize_h": 128,
+            "resize_w": 128
+        }
+    ],
+    "gene_meas": {
+        "type": "GenerationGrayMeas"
+    },
+    "train_data": {
+        "type": "DavisData",
+        "data_root": "/home/yychen/zhangmuyuan/datasets/DAVIS/JPEGImages/480p",
+        "mask_path": "test_datasets/mask/efficientsci_mask.mat",
+        "pipeline": [
+            {
+                "type": "RandomResize"
+            },
+            {
+                "type": "RandomCrop",
+                "crop_h": 128,
+                "crop_w": 128,
+                "random_size": true
+            },
+            {
+                "type": "Flip",
+                "direction": "horizontal",
+                "flip_ratio": 0.5
+            },
+            {
+                "type": "Flip",
+                "direction": "diagonal",
+                "flip_ratio": 0.5
+            },
+            {
+                "type": "Resize",
+                "resize_h": 128,
+                "resize_w": 128
+            }
+        ],
+        "gene_meas": {
+            "type": "GenerationGrayMeas"
+        },
+        "mask_shape": [
+            128,
+            128,
+            8
+        ],
+        "scene_num": 5000
+    },
+    "checkpoint_config": {
+        "interval": 1
+    },
+    "log_config": {
+        "interval": 250
+    },
+    "save_image_config": {
+        "interval": 250
+    },
+    "optimizer": {
+        "type": "Adam",
+        "lr": 0.0004
+    },
+    "loss": {
+        "type": "MSELoss"
+    },
+    "runner": {
+        "max_epochs": 300
+    },
+    "checkpoints": null,
+    "resume": null,
+    "opt": "Skipped opt",
+    "data": {
+        "samples_per_gpu": 1,
+        "workers_per_gpu": 4
+    },
+    "model": {
+        "type": "NetVideo_conv3d_TSAB_shareBody_action_changeSample_seriesConnection_withoutDP_keepy",
+        "opt": "Namespace(size=128, stage=9, seed=42, reuse=[1, 1, 0, 0, 0, 0, 0, 0, 1], bands=8, dim=16, is_train=True, config='configs/DPU/DPU_base.py', work_dir=None, device='1', distributed=False, resume=None, local_rank=0, body_share_params=False)"
+    },
+    "eval": {
+        "flag": true,
+        "interval": 1
+    }
+}
+--------------------------------------------------------------------------------
+
+2025-03-10 01:47:59,498 - Train_video.py [line: 173] - Model info:
+--------------------------------------------------------------------------------
+NetVideo_conv3d_TSAB_shareBody_action_changeSample_seriesConnection_withoutDP_keepy(
+  (conv3d): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (mu): ModuleList(
+    (0-8): 9 x Mu_Estimator(
+      (conv): Sequential(
+        (0): Conv3d(16, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (1): ReLU(inplace=True)
+      )
+      (avpool): AdaptiveAvgPool2d(output_size=1)
+      (mlp): Sequential(
+        (0): Conv3d(8, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (1): ReLU(inplace=True)
+        (2): Conv3d(8, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (3): ReLU(inplace=True)
+        (4): Conv3d(8, 1, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (5): Softplus(beta=1, threshold=20)
+      )
+    )
+  )
+  (net_stage_head): ModuleList(
+    (0): IPB(
+      (conv_in): Conv3d(32, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+      (down1): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+          (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=16, out_features=16, bias=False)
+            (to_qk): Linear(in_features=16, out_features=32, bias=False)
+            (to_out): Linear(in_features=16, out_features=16, bias=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=16, out_features=48, bias=False)
+              (proj): Linear(in_features=16, out_features=16, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (downsample1): Conv3d(16, 32, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+      (down2): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (downsample2): Conv3d(32, 64, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+      (bottleneck_local): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (bottleneck_swin): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (upsample2): ConvTranspose3d(64, 32, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+      (fusion2): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (up2): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (upsample1): ConvTranspose3d(32, 16, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+      (fusion1): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (up1): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+          (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=16, out_features=16, bias=False)
+            (to_qk): Linear(in_features=16, out_features=32, bias=False)
+            (to_out): Linear(in_features=16, out_features=16, bias=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=16, out_features=48, bias=False)
+              (proj): Linear(in_features=16, out_features=16, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (conv_out): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+      (down1_action): StageInteraction(
+        (st_inter_enc): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+        (gamma): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+      )
+      (down2_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (bottleneck_local_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (bottleneck_swin_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (up2_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (up1_action): StageInteraction(
+        (st_inter_enc): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+        (gamma): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+      )
+    )
+    (1): FB(
+      (out): Sequential(
+        (0): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (1): GroupNorm(32, 32, eps=1e-05, affine=True)
+        (2): LeakyReLU(negative_slope=0.1, inplace=True)
+        (3): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (4): GroupNorm(16, 16, eps=1e-05, affine=True)
+        (5): LeakyReLU(negative_slope=0.1, inplace=True)
+      )
+    )
+  )
+  (net_stage_body): ModuleList(
+    (0-6): 7 x ModuleList(
+      (0): IPB(
+        (conv_in): Conv3d(32, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (down1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (downsample1): Conv3d(16, 32, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+        (down2): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (downsample2): Conv3d(32, 64, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+        (bottleneck_local): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (bottleneck_swin): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (upsample2): ConvTranspose3d(64, 32, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+        (fusion2): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up2): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (upsample1): ConvTranspose3d(32, 16, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+        (fusion1): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (conv_out): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (down1_action): StageInteraction(
+          (st_inter_enc): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+          (gamma): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+        )
+        (down2_action): StageInteraction(
+          (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+          (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        )
+        (bottleneck_local_action): StageInteraction(
+          (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+          (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        )
+        (bottleneck_swin_action): StageInteraction(
+          (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+          (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        )
+        (up2_action): StageInteraction(
+          (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+          (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        )
+        (up1_action): StageInteraction(
+          (st_inter_enc): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+          (gamma): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+        )
+      )
+      (1): FB(
+        (out): Sequential(
+          (0): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+          (1): GroupNorm(32, 32, eps=1e-05, affine=True)
+          (2): LeakyReLU(negative_slope=0.1, inplace=True)
+          (3): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+          (4): GroupNorm(16, 16, eps=1e-05, affine=True)
+          (5): LeakyReLU(negative_slope=0.1, inplace=True)
+        )
+      )
+    )
+  )
+  (net_stage_tail): ModuleList(
+    (0): IPB(
+      (conv_in): Conv3d(32, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+      (down1): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+          (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=16, out_features=16, bias=False)
+            (to_qk): Linear(in_features=16, out_features=32, bias=False)
+            (to_out): Linear(in_features=16, out_features=16, bias=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=16, out_features=48, bias=False)
+              (proj): Linear(in_features=16, out_features=16, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (downsample1): Conv3d(16, 32, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+      (down2): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (downsample2): Conv3d(32, 64, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+      (bottleneck_local): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (bottleneck_swin): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (upsample2): ConvTranspose3d(64, 32, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+      (fusion2): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (up2): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+          (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=32, out_features=32, bias=False)
+            (to_qk): Linear(in_features=32, out_features=32, bias=False)
+            (to_out): Linear(in_features=32, out_features=32, bias=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=32, out_features=96, bias=False)
+              (proj): Linear(in_features=32, out_features=32, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+              (3): GELU()
+              (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (upsample1): ConvTranspose3d(32, 16, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+      (fusion1): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+      (up1): FAB_TSAB(
+        (FAB): FAB(
+          (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+          (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (fa): FA(
+            (cal_atten): Attention(
+              (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+              (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+              (mlp1): Sequential(
+                (0): Linear(in_features=64, out_features=1, bias=False)
+              )
+              (mlp2): Sequential(
+                (0): Linear(in_features=64, out_features=64, bias=False)
+                (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                (2): Linear(in_features=64, out_features=1, bias=False)
+              )
+            )
+            (to_v): Linear(in_features=16, out_features=16, bias=False)
+            (to_qk): Linear(in_features=16, out_features=32, bias=False)
+            (to_out): Linear(in_features=16, out_features=16, bias=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+        (TSAB): TSAB(
+          (tsab): PreNorm(
+            (fn): TimesAttention3D(
+              (qkv): Linear(in_features=16, out_features=48, bias=False)
+              (proj): Linear(in_features=16, out_features=16, bias=True)
+              (softmax): Softmax(dim=-1)
+            )
+            (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          )
+          (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+          (ffn): FeedForward(
+            (net): Sequential(
+              (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              (1): GELU()
+              (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+              (3): GELU()
+              (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+            )
+          )
+        )
+      )
+      (conv_out): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+      (down1_action): StageInteraction(
+        (st_inter_enc): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+        (gamma): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+      )
+      (down2_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (bottleneck_local_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (bottleneck_swin_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (up2_action): StageInteraction(
+        (st_inter_enc): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+        (gamma): Conv3d(32, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=32, bias=False)
+      )
+      (up1_action): StageInteraction(
+        (st_inter_enc): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (act_fn): LeakyReLU(negative_slope=0.01)
+        (phi): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+        (gamma): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=16, bias=False)
+      )
+    )
+    (1): FB(
+      (out): Sequential(
+        (0): Conv3d(32, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (1): GroupNorm(32, 32, eps=1e-05, affine=True)
+        (2): LeakyReLU(negative_slope=0.1, inplace=True)
+        (3): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (4): GroupNorm(16, 16, eps=1e-05, affine=True)
+        (5): LeakyReLU(negative_slope=0.1, inplace=True)
+      )
+    )
+  )
+  (fem): FEM(
+    (fem): Sequential(
+      (0): Conv3d(1, 4, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+      (2): Conv3d(4, 8, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+      (3): LeakyReLU(negative_slope=0.01, inplace=True)
+      (4): Conv3d(8, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+      (5): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+  )
+  (vrm): Sequential(
+    (0): Conv3d(16, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+    (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    (2): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+    (3): LeakyReLU(negative_slope=0.01, inplace=True)
+    (4): Conv3d(16, 1, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+  )
+)
+--------------------------------------------------------------------------------
+
+2025-03-10 01:47:59,828 - Train_video.py [line: 212] - No pre_train model
+2025-03-10 01:48:01,899 - Train_video.py [line: 276] - epoch: [0][   0/5000], lr: 0.000400, loss: 1.22809.

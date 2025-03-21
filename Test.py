@@ -10,7 +10,7 @@ import torch
 import torch.nn as nn
 from torchvision.transforms import ToPILImage
 from Utils import *
-from Model import Net
+from Model_DPU import Net_DPU
 from Dataset import dataset
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
@@ -74,7 +74,7 @@ if __name__ == "__main__":
     # loss_func = nn.L1Loss()
     loss_func = nn.MSELoss()
 
-    model = Net(opt).cuda()
+    model = Net_DPU(opt).cuda()
 
     with torch.no_grad():
         for epoch in range(1, 300):

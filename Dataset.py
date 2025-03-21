@@ -1,11 +1,7 @@
 import torch.utils.data as tud
-import random
-import torch
-import numpy as np
-import scipy.io as sio
-from torchvision.transforms import Resize
-from torchvision.transforms import RandomRotation
+
 from Utils import *
+
 
 def arguement_1(x):
     """
@@ -107,7 +103,7 @@ class dataset(tud.Dataset):
         g = shift_3(mask * label, len_shift=self.len_shift)
         g = torch.sum(g, 0)
         Phi_s_batch = torch.sum(shift_3(Phi_batch, 2) ** 2, 0)
-        Phi_s_batch[Phi_s_batch == 0] = 1
+        Phi_s_batch[Phi_s_batch == 0] = 1e-6
 
         return g.unsqueeze(0), label, Phi_batch, Phi_s_batch.unsqueeze(0)
 

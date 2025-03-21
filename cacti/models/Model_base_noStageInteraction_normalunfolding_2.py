@@ -1,0 +1,554 @@
+import warnings
+
+import math
+import torch
+import torch.nn as nn
+import torch.nn.functional as F
+from einops import rearrange
+from torch import einsum
+from torch.nn import init
+
+from cacti.models.builder import MODELS
+
+
+#####
+### 去掉和展开阶段无关部分
+### 增加彩色通道处理部分
+### 应该不用加
+####
+def _no_grad_trunc_normal_(tensor, mean, std, a, b):
+    def norm_cdf(x):
+        return (1. + math.erf(x / math.sqrt(2.))) / 2.
+
+    if (mean < a - 2 * std) or (mean > b + 2 * std):
+        warnings.warn("mean is more than 2 std from [a, b] in nn.init.trunc_normal_. "
+                      "The distribution of values may be incorrect.",
+                      stacklevel=2)
+    with torch.no_grad():
+        l = norm_cdf((a - mean) / std)
+        u = norm_cdf((b - mean) / std)
+        tensor.uniform_(2 * l - 1, 2 * u - 1)
+        tensor.erfinv_()
+        tensor.mul_(std * math.sqrt(2.))
+        tensor.add_(mean)
+        tensor.clamp_(min=a, max=b)
+        return tensor
+
+
+def trunc_normal_(tensor, mean=0., std=1., a=-2., b=2.):
+    # type: (Tensor, float, float, float, float) -> Tensor
+    return _no_grad_trunc_normal_(tensor, mean, std, a, b)
+
+
+class GELU(nn.Module):
+    def forward(self, x):
+        return F.gelu(x)
+
+
+class Attention(nn.Module):
+    def __init__(self, dim, length):
+        super().__init__()
+        self.pc_proj_q = nn.Linear(dim, 1, bias=False)
+        self.bias_pc_proj_q = nn.Parameter(torch.FloatTensor([1.]))
+        self.pc_proj_k = nn.Linear(dim, 1, bias=False)
+        self.bias_pc_proj_k = nn.Parameter(torch.FloatTensor([1.]))
+        self.mlp1 = nn.Sequential(
+            nn.Linear(length, 1, bias=False),
+        )
+        self.mlp2 = nn.Sequential(
+            nn.Linear(length, length, bias=False),
+            nn.LeakyReLU(negative_slope=0.1, inplace=True),
+            nn.Linear(length, 1, bias=False),
+        )
+
+    def forward(self, q, k):
+        Sigma_q = self.pc_proj_q(q) + self.bias_pc_proj_q
+        Sigma_k = self.pc_proj_k(k) + self.bias_pc_proj_k
+        sim = einsum('b h B i d, b h B j d -> b h B i j', q, k)
+        Sigma = einsum('b h B i d, b h B j d -> b h B i j', Sigma_q, Sigma_k)
+
+        diag_sim = torch.diagonal(sim, dim1=-2, dim2=-1)
+        sim_norm = sim - torch.diag_embed(diag_sim)
+        theta = self.mlp1(sim_norm).squeeze(-1)
+        theta = self.mlp2(theta).unsqueeze(-1)
+
+        sim = sim * Sigma
+        attn = sim.softmax(dim=-1) * (sim > theta)
+        return attn
+
+
+# class FA(nn.Module):
+#     def __init__(self, dim, window_size=(8, 8), dim_head=28, sq_dim=None, shift=True):
+#         super().__init__()
+#
+#         if sq_dim is None:
+#             self.rank = dim
+#         else:
+#             self.rank = sq_dim
+#         self.heads_qk = sq_dim // dim_head
+#         self.heads_v = dim // dim_head
+#         self.window_size = window_size
+#         self.shift = shift
+#
+#         num_token = window_size[0] * window_size[1]
+#         self.cal_atten = Attention(dim_head, num_token)
+#
+#         self.to_v = nn.Linear(dim, dim, bias=False)
+#         self.to_qk = nn.Linear(dim, self.rank * 2, bias=False)
+#         self.to_out = nn.Linear(dim, dim)
+#
+#     def cal_attention(self, x):
+#         q, k = self.to_qk(x).chunk(2, dim=-1)
+#         v = self.to_v(x)
+#         q, k = map(lambda t: rearrange(t, 'b n (h d) -> b h n d', h=self.heads_qk), (q, k))
+#         v = rearrange(v, 'b n (h d) -> b h n d', h=self.heads_v)
+#         attn = self.cal_atten(q, k)
+#         out = einsum('b h i j, b h j d -> b h i d', attn, v)
+#         out = rearrange(out, 'b h n d -> b n (h d)')
+#         out = self.to_out(out)
+#         return out
+#
+#     def forward(self, x):
+#
+#         b, h, w, c = x.shape
+#         w_size = self.window_size
+#         if self.shift:
+#             x = x.roll(shifts=4, dims=1).roll(shifts=4, dims=2)
+#         x_inp = rearrange(x, 'b (h b0) (w b1) c -> (b h w) (b0 b1) c', b0=w_size[0], b1=w_size[1])
+#         out = self.cal_attention(x_inp)
+#         out = rearrange(out, '(b h w) (b0 b1) c -> b (h b0) (w b1) c', h=h // w_size[0], w=w // w_size[1], b0=w_size[0])
+#         if self.shift:
+#             out = out.roll(shifts=-4, dims=1).roll(shifts=-4, dims=2)
+#         return out
+class FA(nn.Module):
+    def __init__(self, dim, window_size=(8, 8), dim_head=28, sq_dim=None, shift=True):
+        super().__init__()
+
+        if sq_dim is None:
+            self.rank = dim
+        else:
+            self.rank = sq_dim
+        self.heads_qk = sq_dim // dim_head
+        self.heads_v = dim // dim_head
+        self.window_size = window_size
+        self.shift = shift
+
+        num_token = window_size[0] * window_size[1]
+        self.cal_atten = Attention(dim_head, num_token)
+
+        self.to_v = nn.Linear(dim, dim, bias=False)
+        self.to_qk = nn.Linear(dim, self.rank * 2, bias=False)
+        self.to_out = nn.Linear(dim, dim)
+
+    def cal_attention(self, x):
+        q, k = self.to_qk(x).chunk(2, dim=-1)
+        v = self.to_v(x)
+        q, k = map(lambda t: rearrange(t, 'b n B (h d) -> b h B n d', h=self.heads_qk), (q, k))
+        v = rearrange(v, 'b n B (h d) -> b h B n d', h=self.heads_v)
+        attn = self.cal_atten(q, k)
+        # attn = q @ k.transpose(-2, -1)
+        out = einsum('b h B i j, b h B j d -> b h B i d', attn, v)
+        out = rearrange(out, 'b h B n d -> b n B (h d)')
+        out = self.to_out(out)
+        return out
+
+    def forward(self, x):
+        b, c, B, h, w = x.shape
+        w_size = self.window_size
+        if self.shift:
+            x = x.roll(shifts=4, dims=3).roll(shifts=4, dims=4)
+        x_inp = rearrange(x, 'b c B (h b0) (w b1)-> (b h w) (b0 b1) B c', b0=w_size[0], b1=w_size[1])
+        out = self.cal_attention(x_inp)
+        out = rearrange(out, '(b h w) (b0 b1) B c -> b c B (h b0) (w b1)', h=h // w_size[0], w=w // w_size[1],
+                        b0=w_size[0])
+        if self.shift:
+            out = out.roll(shifts=-4, dims=3).roll(shifts=-4, dims=4)
+        return out
+
+
+class FeedForward(nn.Module):
+    def __init__(self, dim, mult=4):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Conv3d(dim, dim * mult, 1, 1, bias=False),
+            GELU(),
+            nn.Conv3d(dim * mult, dim * mult, 3, 1, 1, bias=False, groups=dim * mult),
+            GELU(),
+            nn.Conv3d(dim * mult, dim, 1, 1, bias=False),
+        )
+
+    def forward(self, x):
+        """
+        x: [b,h,w,c]
+        return out: [b,h,w,c]
+        """
+        out = self.net(x)
+        return out
+
+
+class FAB(nn.Module):
+    def __init__(self, dim, sq_dim, window_size=(8, 8), dim_head=28, mult=4, shift=False):
+        super().__init__()
+        self.pos_emb = nn.Conv3d(dim, dim, 5, 1, 2, bias=False, groups=dim)
+        self.fa = PreNorm(dim, FA(dim=dim, window_size=window_size, dim_head=dim_head, sq_dim=sq_dim, shift=shift),
+                          norm_type='ln')
+        self.ffn = PreNorm(dim, FeedForward(dim=dim, mult=mult), norm_type='ln')
+
+    def forward(self, x):
+        x = x + self.pos_emb(x)
+        x = self.fa(x) + x
+        x = self.ffn(x) + x
+        return x
+
+
+class PreNorm(nn.Module):
+    def __init__(self, dim, fn, norm_type='ln'):
+        super().__init__()
+        self.fn = fn
+        self.norm_type = norm_type
+        if norm_type == 'ln':
+            self.norm = nn.LayerNorm(dim)
+        else:
+            self.norm = nn.GroupNorm(dim, dim)
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+
+    def forward(self, x, *args, **kwargs):
+        if self.norm_type == 'ln':
+            x = self.norm(x.permute(0, 2, 3, 4, 1)).permute(0, 4, 1, 2, 3)
+        else:
+            x = self.norm(x)
+        return self.fn(x, *args, **kwargs)
+
+
+class TSAB(nn.Module):
+    def __init__(self, dim, num_head):
+        super().__init__()
+        self.tsab = PreNorm(dim, TimesAttention3D(dim, num_head), norm_type='ln')
+        self.ffn = PreNorm(dim, FeedForward(dim=dim), norm_type='ln')
+
+    def forward(self, x):
+        x = self.tsab(x) + x
+        x = self.ffn(x) + x
+        return x
+
+
+
+class STSAB(nn.Module):
+    def __init__(self, dim, sq_dim, window_size=(8, 8), dim_head=28, mult=4, shift=False):
+        super().__init__()
+        self.FAB = FAB(dim=dim, sq_dim=sq_dim, window_size=window_size, dim_head=dim_head, mult=mult, shift=shift)
+        self.TSAB = TSAB(dim, num_head=dim_head)
+        # self.TSAB2 = TSAB(dim, num_head=dim_head)
+
+    def forward(self, x):
+        x = self.FAB(x)
+        x = self.TSAB(x)
+        # x = self.TSAB2(x)
+        return x
+
+
+
+class StageInteraction(nn.Module):
+    def __init__(self, dim):
+        super().__init__()
+        self.st_inter_enc = nn.Conv3d(dim, dim, 1, 1, 0, bias=False)
+        self.st_inter_dec = nn.Conv3d(dim, dim, 1, 1, 0, bias=False)
+        self.act_fn = nn.LeakyReLU()
+        self.phi = nn.Conv3d(dim, dim, 3, 1, 1, bias=False, groups=dim)
+        self.gamma = nn.Conv3d(dim, dim, 3, 1, 1, bias=False, groups=dim)
+
+    def forward(self, inp, pre_enc, pre_dec):
+        out = self.st_inter_enc(pre_enc) + self.st_inter_dec(pre_dec)
+        skip = self.act_fn(out)
+        phi = torch.sigmoid(self.phi(skip))
+        gamma = self.gamma(skip)
+
+        out = phi * inp + gamma
+
+        return out
+
+
+class STT(nn.Module):
+    def __init__(self, in_dim=8, out_dim=4, dim=4):
+        super(STT, self).__init__()
+
+        self.conv_in = nn.Conv3d(in_dim, dim, 3, 1, 1, bias=False)
+        self.down1 = STSAB(dim=dim, sq_dim=dim, dim_head=dim, mult=4)
+        self.downsample1 = nn.Conv3d(dim, dim * 2, (3, 4, 4), (1, 2, 2), (1, 1, 1), bias=False)
+        self.down2 = STSAB(dim=dim * 2, sq_dim=dim, dim_head=dim, mult=4)
+        self.downsample2 = nn.Conv3d(dim * 2, dim * 4, (3, 4, 4), (1, 2, 2), (1, 1, 1), bias=False)
+        self.bottleneck_local = STSAB(dim=dim * 2, sq_dim=dim, dim_head=dim, mult=4)
+        self.bottleneck_swin = STSAB(dim=dim * 2, sq_dim=dim, dim_head=dim, mult=4, shift=True)
+        self.upsample2 = nn.ConvTranspose3d(dim * 4, dim * 2, (1, 2, 2), (1, 2, 2))
+        self.fusion2 = nn.Conv3d(dim * 4, dim * 2, 1, 1, 0, bias=False)
+        self.up2 = STSAB(dim=dim * 2, sq_dim=dim, dim_head=dim, mult=4, shift=True)
+        self.upsample1 = nn.ConvTranspose3d(dim * 2, dim, (1, 2, 2), (1, 2, 2))
+        self.fusion1 = nn.Conv3d(dim * 2, dim, 1, 1, 0, bias=False)
+        self.up1 = STSAB(dim=dim, sq_dim=dim, dim_head=dim, mult=4, shift=True)
+        self.conv_out = nn.Conv3d(dim, out_dim, 3, 1, 1, bias=False)
+
+        self.apply(self._init_weights)
+
+    def _init_weights(self, m):
+        if isinstance(m, nn.Linear):
+            trunc_normal_(m.weight, std=.02)
+            if isinstance(m, nn.Linear) and m.bias is not None:
+                nn.init.constant_(m.bias, 0)
+        elif isinstance(m, nn.LayerNorm):
+            nn.init.constant_(m.bias, 0)
+            nn.init.constant_(m.weight, 1.0)
+
+    def forward(self, x):
+        """
+            x: [b,c,B,h,w]
+            return out:[b,c,B,h,w]
+        """
+        b, c, B, h_inp, w_inp = x.shape
+        x_in = x
+
+        x = self.conv_in(x)
+        x1 = self.down1(x)
+
+        x = self.downsample1(x1)
+        x2 = self.down2(x)
+
+        x = self.downsample2(x2)
+        # 通道 * 4
+        x_local = self.bottleneck_local(x[:, :2 * c, :, :])
+
+        x_swin = self.bottleneck_swin(x[:, c * 2:, :, :] + x_local)
+
+        x = torch.cat([x_local, x_swin], dim=1)
+
+        x = self.upsample2(x)
+        x = x2 + self.fusion2(torch.cat([x, x2], dim=1))
+        x = self.up2(x)
+
+        x = self.upsample1(x)
+        x = x1 + self.fusion1(torch.cat([x, x1], dim=1))
+        x = self.up1(x)
+
+        out = self.conv_out(x) + x_in
+        # out = x + x_in
+
+        return out
+
+class Mu_Estimator(nn.Module):
+    def __init__(self, in_nc=8, out_nc=1, channel=8):
+        super(Mu_Estimator, self).__init__()
+        self.conv = nn.Sequential(
+            nn.Conv3d(in_nc, channel, 1, 1, 0, bias=True),
+            nn.ReLU(inplace=True)
+        )
+        self.avpool = nn.AdaptiveAvgPool3d(1)
+        self.mlp = nn.Sequential(
+            nn.Conv3d(channel, channel, 1, padding=0, bias=True),
+            nn.ReLU(inplace=True),
+            nn.Conv3d(channel, channel, 1, padding=0, bias=True),
+            nn.ReLU(inplace=True),
+            nn.Conv3d(channel, out_nc, 1, padding=0, bias=True),
+            nn.Softplus())
+
+    def forward(self, x):
+        x = self.conv(x)
+        x = self.avpool(x)
+        x = self.mlp(x) + 1e-6
+        return x
+
+
+class TimesAttention3D(nn.Module):
+    def __init__(self, dim, num_head, qkv_bias=False, qk_scale=None):
+        super().__init__()
+        self.dim = dim
+        head_dim = num_head
+        self.num_heads = dim // head_dim
+        self.scale = qk_scale or head_dim ** -0.5
+
+        self.qkv = nn.Linear(dim, dim * 3, bias=qkv_bias)
+        self.proj = nn.Linear(dim, dim)
+        self.softmax = nn.Softmax(dim=-1)
+
+    def forward(self, x):
+        _, _, _, h, w = x.shape
+        tsab_in = rearrange(x, "b c B h w->(b h w) B c")
+        n, B, C = tsab_in.shape
+        qkv = self.qkv(tsab_in)
+        qkv = qkv.reshape(n, B, 3, self.num_heads, C // self.num_heads).permute(2, 0, 3, 1, 4)
+        q, k, v = qkv[0], qkv[1], qkv[2]
+
+        q = q * self.scale
+        attn = q @ k.transpose(-2, -1)
+        # 无嵌入向量
+        attn = self.softmax(attn)
+        x = (attn @ v).transpose(1, 2).reshape(n, B, C)
+        x = self.proj(x)
+        x = rearrange(x, "(b h w) B c->b c B h w", h=h, w=w)
+        return x
+
+
+class FEM(nn.Module):
+    def __init__(self, in_dim=1, dim=3):
+        super(FEM, self).__init__()
+        self.fem = nn.Sequential(
+            # nn.Conv3d(in_dim, dim * 4, kernel_size=1, stride=1, padding=0),
+            nn.Conv3d(in_dim, dim, kernel_size=(3, 7, 7), stride=1, padding=(1, 3, 3)),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv3d(dim, dim * 2, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv3d(dim * 2, dim * 4, kernel_size=3, stride=(1, 1, 1), padding=1),
+            nn.LeakyReLU(inplace=True),
+        )
+
+    def forward(self, x):
+        return self.fem(x)
+
+
+class VRM(nn.Module):
+    def __init__(self, dim, color_dim):
+        super(VRM, self).__init__()
+        self.vrm = nn.Sequential(
+            # nn.Conv3d(dim, 1, kernel_size=1, stride=1, padding=0),
+            nn.Conv3d(dim, dim * 2, kernel_size=3, stride=1, padding=1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv3d(dim * 2, dim, kernel_size=1, stride=1),
+            nn.LeakyReLU(inplace=True),
+            nn.Conv3d(dim, color_dim, kernel_size=3, stride=1, padding=1),
+        )
+
+    def forward(self, x):
+        return self.vrm(x)
+
+
+@MODELS.register_module
+class NetVideo_base_noStageInteraction_normalunfolding_2(torch.nn.Module):
+    def __init__(self, opt):
+        super(NetVideo_base_noStageInteraction_normalunfolding_2, self).__init__()
+        self.color_dim = opt.color_dim
+        self.stage = opt.stage
+        self.nC = opt.bands
+        self.dim = opt.dim
+        self.size = opt.size
+        self.conv3d = nn.Conv3d(self.dim * 2, self.dim, 1, 1, 0)
+        self.body_share_params = opt.body_share_params
+        para_estimator = []
+        for i in range(opt.stage):
+            para_estimator.append(Mu_Estimator(in_nc=opt.dim))
+        self.mu = nn.ModuleList(para_estimator)
+        self.net_stage_head = nn.ModuleList(nn.ModuleList([
+            STT(in_dim=opt.dim, out_dim=opt.dim, dim=opt.dim),
+        ]))
+        self.net_stage_body = nn.ModuleList([
+            nn.ModuleList([
+                STT(in_dim=opt.dim, out_dim=opt.dim, dim=opt.dim),
+            ]) for _ in range(opt.stage - 2)
+        ]) if not opt.body_share_params else nn.ModuleList([
+            STT(in_dim=opt.dim, out_dim=opt.dim, dim=opt.dim),
+        ])
+        self.net_stage_tail = nn.ModuleList(nn.ModuleList([
+            STT(in_dim=opt.dim, out_dim=opt.dim, dim=opt.dim),
+        ]))
+
+        self.fem = FEM(in_dim=1, dim=self.dim // 4)
+
+        # 特征恢复块
+        self.vrm = VRM(dim=opt.dim, color_dim=self.color_dim)
+
+    def mul_PhiTg(self, Phi_shift, g):
+        temp_1 = g.repeat(1, Phi_shift.shape[1], 1, 1, 1).cuda()
+        PhiTg = temp_1 * Phi_shift
+        # PhiTg = self.reverse(PhiTg)
+        return PhiTg
+
+    def mul_Phif(self, Phi_shift, f):
+        Phif = Phi_shift * f
+        Phif = torch.sum(Phif, 1)
+        return Phif.unsqueeze(1)
+
+    # def bayer_init(self, y, Phi, Phi_s):
+    #     bayer = [[0, 0], [0, 1], [1, 0], [1, 1]]
+    #     b, f, h, w = Phi.shape
+    #     y_bayer = torch.zeros(b, 1, h // 2, w // 2, 4).to(y.device)
+    #     Phi_bayer = torch.zeros(b, f, h // 2, w // 2, 4).to(y.device)
+    #     Phi_s_bayer = torch.zeros(b, 1, h // 2, w // 2, 4).to(y.device)
+    #     for ib in range(len(bayer)):
+    #         ba = bayer[ib]
+    #         y_bayer[..., ib] = y[:, :, ba[0]::2, ba[1]::2]
+    #         Phi_bayer[..., ib] = Phi[:, :, ba[0]::2, ba[1]::2]
+    #         Phi_s_bayer[..., ib] = Phi_s[:, :, ba[0]::2, ba[1]::2]
+    #     y_bayer = rearrange(y_bayer, "b f h w ba->(b ba) f h w")
+    #     Phi_bayer = rearrange(Phi_bayer, "b f h w ba->(b ba) f h w")
+    #     Phi_s_bayer = rearrange(Phi_s_bayer, "b f h w ba->(b ba) f h w")
+    #
+    #     # meas_re = torch.div(y_bayer, Phi_s_bayer)
+    #     # maskt = Phi_bayer.mul(meas_re)
+    #     # x = meas_re + maskt
+    #     # x = rearrange(x, "(b ba) f h w->b f h w ba", b=b)
+    #     x_bayer = torch.zeros(b, f, h, w).to(y.device)
+    #     for ib in range(len(bayer)):
+    #         ba = bayer[ib]
+    #         x_bayer[:, :, ba[0]::2, ba[1]::2] = y_bayer[..., ib]
+    #     x = x_bayer.unsqueeze(1)
+    #     return x
+
+    def forward(self, g, input_mask=None):
+        # video传入的phi[b, 8, 128, 128](256)
+        # video传入的phi_s[b, 1, 128, 128]
+        # video传入的y[b, 1, 128, 128]
+        Phi, PhiPhiT = input_mask
+        g_normal = g / self.nC * 2
+        temp_g = g_normal.repeat(1, self.nC, 1, 1)
+
+        temp_g = temp_g.unsqueeze(4)  # 形状[bs, 8, h, w, c=1]
+        Phi = Phi.unsqueeze(4)  # 形状[bs, c=1, 8, h, w, c=1]
+        PhiPhiT = PhiPhiT.unsqueeze(4)  # 形状[bs, 8, h, w, c=1]
+        # Phi_compressive = Phi_compressive.unsqueeze(4)  # 形状[bs, 8, h, w, c=1]
+        g = g.unsqueeze(4)  # 形状[bs, 8, h, w, c=1]
+
+        # 直接特征提取
+        temp_g = self.fem(temp_g.permute(0, 4, 1, 2, 3))  # 形状[bs, c 8, h, w]
+        g = g.permute(0, 4, 1, 2, 3)  # 形状[bs, c 8, h, w]
+        Phi = self.fem(Phi.permute(0, 4, 1, 2, 3))  # 形状[bs, c 8, h, w]
+        PhiPhiT = PhiPhiT.permute(0, 4, 1, 2, 3)  # 形状[bs, c 8, h, w]
+
+        f0 = temp_g
+        f = self.conv3d(torch.cat([f0, Phi], dim=1))
+
+        out = []
+        mu = self.mu[0](f)
+
+        z = self.net_stage_head[0](f)
+        # r = self.net_stage_head[1](torch.cat([z_ori - y / mu - f, f], dim=1), Phi, Phi_compressive)
+        Phi_f = self.mul_Phif(Phi, z)
+        f = z + self.mul_PhiTg(Phi, torch.div(g - Phi_f, mu + PhiPhiT))  # 有个reverse操作需要去掉
+        out_ = self.vrm(f).squeeze(1)
+        out.append(out_)
+
+        if not self.body_share_params:
+            for i in range(self.stage - 2):
+                mu = self.mu[i + 1](f)
+                z = self.net_stage_body[i][0](f)
+                Phi_f = self.mul_Phif(Phi, z)
+                f = z + self.mul_PhiTg(Phi, torch.div(g - Phi_f, mu + PhiPhiT))  # 有个reverse操作需要去掉
+                out_ = self.vrm(f).squeeze(1)
+                out.append(out_)
+        else:
+            for i in range(self.stage - 2):
+                mu = self.mu[i + 1](f)
+                z = self.net_stage_body[0](f)
+                Phi_f = self.mul_Phif(Phi, z)
+                f = z + self.mul_PhiTg(Phi, torch.div(g - Phi_f, mu + PhiPhiT))  # 有个reverse操作需要去掉
+                out_ = self.vrm(f).squeeze(1)
+                out.append(out_)
+
+        mu = self.mu[self.stage - 1](f)
+        z = self.net_stage_tail[0](f)
+        Phi_f = self.mul_Phif(Phi, z)
+        f = z + self.mul_PhiTg(Phi, torch.div(g - Phi_f, mu + PhiPhiT))  # 有个reverse操作需要去掉
+        out_ = self.vrm(f).squeeze(1)
+        out.append(out_)
+        return out

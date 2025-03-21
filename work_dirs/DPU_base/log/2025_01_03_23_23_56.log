@@ -1,0 +1,1941 @@
+2025-01-03 23:23:56,949 - Train_video.py [line: 137] - GPU info:
+--------------------------------------------------------------------------------
+CUDA available: True
+GPU numbers: 1
+GPU INFO: [{'GPU 0': 'NVIDIA GeForce RTX 4090'}]
+--------------------------------------------------------------------------------
+
+2025-01-03 23:23:56,950 - Train_video.py [line: 143] - cfg info:
+--------------------------------------------------------------------------------
+{
+    "test_data": {
+        "type": "SixGraySimData",
+        "data_root": "test_datasets/simulation",
+        "mask_path": "test_datasets/mask/efficientsci_mask.mat",
+        "mask_shape": [
+            128,
+            128,
+            8
+        ]
+    },
+    "resize_h": 128,
+    "resize_w": 128,
+    "train_pipeline": [
+        {
+            "type": "RandomResize"
+        },
+        {
+            "type": "RandomCrop",
+            "crop_h": 128,
+            "crop_w": 128,
+            "random_size": true
+        },
+        {
+            "type": "Flip",
+            "direction": "horizontal",
+            "flip_ratio": 0.5
+        },
+        {
+            "type": "Flip",
+            "direction": "diagonal",
+            "flip_ratio": 0.5
+        },
+        {
+            "type": "Resize",
+            "resize_h": 128,
+            "resize_w": 128
+        }
+    ],
+    "gene_meas": {
+        "type": "GenerationGrayMeas"
+    },
+    "train_data": {
+        "type": "DavisData",
+        "data_root": "/home/yychen/zhangmuyuan/datasets/DAVIS/JPEGImages/480p",
+        "mask_path": "test_datasets/mask/efficientsci_mask.mat",
+        "pipeline": [
+            {
+                "type": "RandomResize"
+            },
+            {
+                "type": "RandomCrop",
+                "crop_h": 128,
+                "crop_w": 128,
+                "random_size": true
+            },
+            {
+                "type": "Flip",
+                "direction": "horizontal",
+                "flip_ratio": 0.5
+            },
+            {
+                "type": "Flip",
+                "direction": "diagonal",
+                "flip_ratio": 0.5
+            },
+            {
+                "type": "Resize",
+                "resize_h": 128,
+                "resize_w": 128
+            }
+        ],
+        "gene_meas": {
+            "type": "GenerationGrayMeas"
+        },
+        "mask_shape": [
+            128,
+            128,
+            8
+        ],
+        "scene_num": 100
+    },
+    "checkpoint_config": {
+        "interval": 1
+    },
+    "log_config": {
+        "interval": 250
+    },
+    "save_image_config": {
+        "interval": 250
+    },
+    "optimizer": {
+        "type": "Adam",
+        "lr": 0.0004
+    },
+    "loss": {
+        "type": "MSELoss"
+    },
+    "runner": {
+        "max_epochs": 300
+    },
+    "checkpoints": null,
+    "resume": null,
+    "opt": "Skipped opt",
+    "data": {
+        "samples_per_gpu": 1,
+        "workers_per_gpu": 4
+    },
+    "model": {
+        "type": "NetVideo_base_noStageInteraction_deepcache_action_ffnlw_single_multireuse_multimain_replace_new_normalunfolding",
+        "opt": "Namespace(size=128, stage=9, seed=42, reuse=[1, 1, 0, 0, 0, 0, 0, 0, 1], bands=8, dim=16, is_train=True, config='configs/DPU/DPU_base.py', work_dir=None, device='1', distributed=False, resume=None, local_rank=0, body_share_params=False)"
+    },
+    "eval": {
+        "flag": true,
+        "interval": 1
+    }
+}
+--------------------------------------------------------------------------------
+
+2025-01-03 23:23:56,957 - Train_video.py [line: 147] - Model info:
+--------------------------------------------------------------------------------
+NetVideo_base_noStageInteraction_deepcache_action_ffnlw_single_multireuse_multimain_replace_new_normalunfolding(
+  (conv3d): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+  (mu): ModuleList(
+    (0-8): 9 x Mu_Estimator(
+      (conv): Sequential(
+        (0): Conv3d(16, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (1): ReLU(inplace=True)
+      )
+      (avpool): AdaptiveAvgPool2d(output_size=1)
+      (mlp): Sequential(
+        (0): Conv3d(8, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (1): ReLU(inplace=True)
+        (2): Conv3d(8, 8, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (3): ReLU(inplace=True)
+        (4): Conv3d(8, 1, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+        (5): Softplus(beta=1, threshold=20)
+      )
+    )
+  )
+  (net): ModuleList(
+    (0-1): 2 x ModuleList(
+      (0): IPB(
+        (conv_in): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (down1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (downsample1): Conv3d(16, 32, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+        (down2): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (downsample2): Conv3d(32, 64, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+        (bottleneck_local): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (bottleneck_swin): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (upsample2): ConvTranspose3d(64, 32, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+        (fusion2): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up2): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (upsample1): ConvTranspose3d(32, 16, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+        (fusion1): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (conv_out): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+      )
+    )
+    (2-7): 6 x ModuleList(
+      (0): IPB_without(
+        (down1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (fusion1): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up1_action): StageInteraction(
+          (st_inter_dec): Conv3d(16, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+          (act_fn): LeakyReLU(negative_slope=0.01)
+          (phi1): Conv3d(16, 16, kernel_size=(1, 3, 3), stride=(1, 1, 1), padding=(0, 1, 1), groups=16, bias=False)
+          (gamma1): Conv3d(16, 16, kernel_size=(1, 3, 3), stride=(1, 1, 1), padding=(0, 1, 1), groups=16, bias=False)
+        )
+      )
+    )
+    (8): ModuleList(
+      (0): IPB(
+        (conv_in): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+        (down1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (downsample1): Conv3d(16, 32, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+        (down2): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (downsample2): Conv3d(32, 64, kernel_size=(3, 4, 4), stride=(1, 2, 2), padding=(1, 1, 1), bias=False)
+        (bottleneck_local): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (bottleneck_swin): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (upsample2): ConvTranspose3d(64, 32, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+        (fusion2): Conv3d(64, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up2): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(32, 32, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=32, bias=False)
+            (norm1): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=32, out_features=32, bias=False)
+              (to_qk): Linear(in_features=32, out_features=32, bias=False)
+              (to_out): Linear(in_features=32, out_features=32, bias=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=32, out_features=96, bias=False)
+                (proj): Linear(in_features=32, out_features=32, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((32,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(32, 128, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(128, 128, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=128, bias=False)
+                (3): GELU()
+                (4): Conv3d(128, 32, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (upsample1): ConvTranspose3d(32, 16, kernel_size=(1, 2, 2), stride=(1, 2, 2))
+        (fusion1): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+        (up1): FAB_TSAB(
+          (FAB): FAB(
+            (pos_emb): Conv3d(16, 16, kernel_size=(5, 5, 5), stride=(1, 1, 1), padding=(2, 2, 2), groups=16, bias=False)
+            (norm1): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (fa): FA(
+              (cal_atten): Attention(
+                (pc_proj_q): Linear(in_features=16, out_features=1, bias=False)
+                (pc_proj_k): Linear(in_features=16, out_features=1, bias=False)
+                (mlp1): Sequential(
+                  (0): Linear(in_features=64, out_features=1, bias=False)
+                )
+                (mlp2): Sequential(
+                  (0): Linear(in_features=64, out_features=64, bias=False)
+                  (1): LeakyReLU(negative_slope=0.1, inplace=True)
+                  (2): Linear(in_features=64, out_features=1, bias=False)
+                )
+              )
+              (to_v): Linear(in_features=16, out_features=16, bias=False)
+              (to_qk): Linear(in_features=16, out_features=32, bias=False)
+              (to_out): Linear(in_features=16, out_features=16, bias=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+          (TSAB): TSAB(
+            (tsab): PreNorm(
+              (fn): TimesAttention3D(
+                (qkv): Linear(in_features=16, out_features=48, bias=False)
+                (proj): Linear(in_features=16, out_features=16, bias=True)
+                (softmax): Softmax(dim=-1)
+              )
+              (norm): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            )
+            (norm2): LayerNorm((16,), eps=1e-05, elementwise_affine=True)
+            (ffn): FeedForward(
+              (net): Sequential(
+                (0): Conv3d(16, 64, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+                (1): GELU()
+                (2): Conv3d(64, 64, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), groups=64, bias=False)
+                (3): GELU()
+                (4): Conv3d(64, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1), bias=False)
+              )
+            )
+          )
+        )
+        (conv_out): Conv3d(16, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1), bias=False)
+      )
+    )
+  )
+  (fem): FEM(
+    (fem): Sequential(
+      (0): Conv3d(1, 4, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+      (1): LeakyReLU(negative_slope=0.01, inplace=True)
+      (2): Conv3d(4, 8, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+      (3): LeakyReLU(negative_slope=0.01, inplace=True)
+      (4): Conv3d(8, 16, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+      (5): LeakyReLU(negative_slope=0.01, inplace=True)
+    )
+  )
+  (vrm): Sequential(
+    (0): Conv3d(16, 32, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+    (1): LeakyReLU(negative_slope=0.01, inplace=True)
+    (2): Conv3d(32, 16, kernel_size=(1, 1, 1), stride=(1, 1, 1))
+    (3): LeakyReLU(negative_slope=0.01, inplace=True)
+    (4): Conv3d(16, 1, kernel_size=(3, 3, 3), stride=(1, 1, 1), padding=(1, 1, 1))
+  )
+)
+--------------------------------------------------------------------------------
+
+2025-01-03 23:23:57,619 - Train_video.py [line: 187] - No pre_train model
+2025-01-03 23:23:59,088 - Train_video.py [line: 241] - epoch: [0][  0/100], lr: 0.000400, loss: 0.66723.
+2025-01-03 23:24:35,307 - Train_video.py [line: 252] - epoch: 0, avg_loss: 0.29479, time: 37.68s.
+
+2025-01-03 23:24:37,961 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 19.6430, runner8: 23.0982, kobe: 19.8983, crash32: 19.0278, aerial32: 20.1429, traffic: 19.7249, psnr_mean: 20.2558.
+
+2025-01-03 23:24:37,961 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.3224, runner8: 0.6999, kobe: 0.4313, crash32: 0.3976, aerial32: 0.4051, traffic: 0.5699, ssim_mean: 0.4711.
+
+2025-01-03 23:24:38,534 - Train_video.py [line: 241] - epoch: [1][  0/100], lr: 0.000400, loss: 0.23781.
+2025-01-03 23:25:15,103 - Train_video.py [line: 252] - epoch: 1, avg_loss: 0.22646, time: 37.14s.
+
+2025-01-03 23:25:17,921 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 23.4376, runner8: 23.1163, kobe: 20.1951, crash32: 20.6025, aerial32: 20.4612, traffic: 19.9077, psnr_mean: 21.2867.
+
+2025-01-03 23:25:17,921 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.4453, runner8: 0.7530, kobe: 0.4997, crash32: 0.5107, aerial32: 0.4585, traffic: 0.6089, ssim_mean: 0.5460.
+
+2025-01-03 23:25:18,513 - Train_video.py [line: 241] - epoch: [2][  0/100], lr: 0.000400, loss: 0.22965.
+2025-01-03 23:25:55,011 - Train_video.py [line: 252] - epoch: 2, avg_loss: 0.22407, time: 37.09s.
+
+2025-01-03 23:25:57,678 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 24.9332, runner8: 23.5263, kobe: 20.5366, crash32: 20.6399, aerial32: 20.6875, traffic: 20.2242, psnr_mean: 21.7580.
+
+2025-01-03 23:25:57,679 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.4650, runner8: 0.7675, kobe: 0.5231, crash32: 0.5353, aerial32: 0.4726, traffic: 0.6421, ssim_mean: 0.5676.
+
+2025-01-03 23:25:58,279 - Train_video.py [line: 241] - epoch: [3][  0/100], lr: 0.000400, loss: 0.22132.
+2025-01-03 23:26:35,647 - Train_video.py [line: 252] - epoch: 3, avg_loss: 0.21504, time: 37.96s.
+
+2025-01-03 23:26:38,234 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 24.0516, runner8: 23.4316, kobe: 20.8418, crash32: 20.7562, aerial32: 20.7049, traffic: 20.2706, psnr_mean: 21.6761.
+
+2025-01-03 23:26:38,235 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.4787, runner8: 0.7769, kobe: 0.5771, crash32: 0.5531, aerial32: 0.4818, traffic: 0.6587, ssim_mean: 0.5877.
+
+2025-01-03 23:26:38,805 - Train_video.py [line: 241] - epoch: [4][  0/100], lr: 0.000400, loss: 0.21956.
+2025-01-03 23:27:14,976 - Train_video.py [line: 252] - epoch: 4, avg_loss: 0.21378, time: 36.74s.
+
+2025-01-03 23:27:17,690 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 24.0582, runner8: 23.5725, kobe: 20.8194, crash32: 20.7539, aerial32: 20.7522, traffic: 20.4064, psnr_mean: 21.7271.
+
+2025-01-03 23:27:17,690 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.4891, runner8: 0.7888, kobe: 0.5703, crash32: 0.5688, aerial32: 0.4909, traffic: 0.6811, ssim_mean: 0.5982.
+
+2025-01-03 23:27:18,255 - Train_video.py [line: 241] - epoch: [5][  0/100], lr: 0.000400, loss: 0.19875.
+2025-01-03 23:27:54,505 - Train_video.py [line: 252] - epoch: 5, avg_loss: 0.21580, time: 36.81s.
+
+2025-01-03 23:27:57,279 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 23.9915, runner8: 23.3027, kobe: 20.6824, crash32: 20.5019, aerial32: 20.6326, traffic: 20.2694, psnr_mean: 21.5634.
+
+2025-01-03 23:27:57,279 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.4997, runner8: 0.7801, kobe: 0.5414, crash32: 0.5707, aerial32: 0.4880, traffic: 0.6805, ssim_mean: 0.5934.
+
+2025-01-03 23:27:57,864 - Train_video.py [line: 241] - epoch: [6][  0/100], lr: 0.000400, loss: 0.13239.
+2025-01-03 23:28:34,269 - Train_video.py [line: 252] - epoch: 6, avg_loss: 0.22073, time: 36.99s.
+
+2025-01-03 23:28:37,066 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.6446, runner8: 23.6443, kobe: 20.9297, crash32: 20.9863, aerial32: 20.8712, traffic: 20.4950, psnr_mean: 22.0952.
+
+2025-01-03 23:28:37,066 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5708, runner8: 0.7956, kobe: 0.5892, crash32: 0.6185, aerial32: 0.5031, traffic: 0.6866, ssim_mean: 0.6273.
+
+2025-01-03 23:28:37,630 - Train_video.py [line: 241] - epoch: [7][  0/100], lr: 0.000400, loss: 0.29905.
+2025-01-03 23:29:14,777 - Train_video.py [line: 252] - epoch: 7, avg_loss: 0.20632, time: 37.71s.
+
+2025-01-03 23:29:17,465 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.0504, runner8: 23.6642, kobe: 20.9483, crash32: 21.1413, aerial32: 20.9270, traffic: 20.5611, psnr_mean: 22.2154.
+
+2025-01-03 23:29:17,465 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5681, runner8: 0.8018, kobe: 0.5871, crash32: 0.6256, aerial32: 0.5091, traffic: 0.6973, ssim_mean: 0.6315.
+
+2025-01-03 23:29:18,012 - Train_video.py [line: 241] - epoch: [8][  0/100], lr: 0.000400, loss: 0.20884.
+2025-01-03 23:29:54,366 - Train_video.py [line: 252] - epoch: 8, avg_loss: 0.21170, time: 36.90s.
+
+2025-01-03 23:29:57,120 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 24.8443, runner8: 23.7638, kobe: 20.8222, crash32: 20.7622, aerial32: 20.8891, traffic: 20.5967, psnr_mean: 21.9464.
+
+2025-01-03 23:29:57,120 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5798, runner8: 0.7986, kobe: 0.5492, crash32: 0.6262, aerial32: 0.5112, traffic: 0.6970, ssim_mean: 0.6270.
+
+2025-01-03 23:29:57,687 - Train_video.py [line: 241] - epoch: [9][  0/100], lr: 0.000400, loss: 0.17609.
+2025-01-03 23:30:34,767 - Train_video.py [line: 252] - epoch: 9, avg_loss: 0.20905, time: 37.64s.
+
+2025-01-03 23:30:37,627 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.2435, runner8: 23.6235, kobe: 20.8257, crash32: 21.0094, aerial32: 20.8463, traffic: 20.5150, psnr_mean: 22.0106.
+
+2025-01-03 23:30:37,628 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6011, runner8: 0.8033, kobe: 0.5630, crash32: 0.6458, aerial32: 0.5140, traffic: 0.6998, ssim_mean: 0.6378.
+
+2025-01-03 23:30:38,205 - Train_video.py [line: 241] - epoch: [10][  0/100], lr: 0.000400, loss: 0.22455.
+2025-01-03 23:31:14,416 - Train_video.py [line: 252] - epoch: 10, avg_loss: 0.21285, time: 36.79s.
+
+2025-01-03 23:31:17,167 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.2795, runner8: 23.8754, kobe: 21.0098, crash32: 21.0661, aerial32: 20.9958, traffic: 20.6238, psnr_mean: 22.3084.
+
+2025-01-03 23:31:17,167 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6198, runner8: 0.8078, kobe: 0.5856, crash32: 0.6609, aerial32: 0.5227, traffic: 0.7061, ssim_mean: 0.6505.
+
+2025-01-03 23:31:17,740 - Train_video.py [line: 241] - epoch: [11][  0/100], lr: 0.000400, loss: 0.21211.
+2025-01-03 23:31:53,997 - Train_video.py [line: 252] - epoch: 11, avg_loss: 0.21067, time: 36.83s.
+
+2025-01-03 23:31:56,607 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.3413, runner8: 23.7282, kobe: 20.9104, crash32: 21.2069, aerial32: 20.9582, traffic: 20.5999, psnr_mean: 22.2908.
+
+2025-01-03 23:31:56,607 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6331, runner8: 0.8074, kobe: 0.5751, crash32: 0.6694, aerial32: 0.5236, traffic: 0.7082, ssim_mean: 0.6528.
+
+2025-01-03 23:31:57,201 - Train_video.py [line: 241] - epoch: [12][  0/100], lr: 0.000400, loss: 0.20178.
+2025-01-03 23:32:33,526 - Train_video.py [line: 252] - epoch: 12, avg_loss: 0.20650, time: 36.92s.
+
+2025-01-03 23:32:36,267 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.8393, runner8: 23.4714, kobe: 20.3616, crash32: 21.1151, aerial32: 20.8877, traffic: 20.5043, psnr_mean: 22.1965.
+
+2025-01-03 23:32:36,267 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6491, runner8: 0.8054, kobe: 0.4973, crash32: 0.6688, aerial32: 0.5200, traffic: 0.7057, ssim_mean: 0.6411.
+
+2025-01-03 23:32:36,862 - Train_video.py [line: 241] - epoch: [13][  0/100], lr: 0.000400, loss: 0.25290.
+2025-01-03 23:33:13,473 - Train_video.py [line: 252] - epoch: 13, avg_loss: 0.21229, time: 37.20s.
+
+2025-01-03 23:33:16,101 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.7145, runner8: 23.8687, kobe: 20.9393, crash32: 21.0517, aerial32: 20.9952, traffic: 20.6461, psnr_mean: 22.3692.
+
+2025-01-03 23:33:16,101 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6939, runner8: 0.8101, kobe: 0.5663, crash32: 0.6985, aerial32: 0.5292, traffic: 0.7066, ssim_mean: 0.6674.
+
+2025-01-03 23:33:16,688 - Train_video.py [line: 241] - epoch: [14][  0/100], lr: 0.000400, loss: 0.22984.
+2025-01-03 23:33:53,365 - Train_video.py [line: 252] - epoch: 14, avg_loss: 0.21164, time: 37.26s.
+
+2025-01-03 23:33:56,270 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.9378, runner8: 23.8253, kobe: 20.9513, crash32: 21.2156, aerial32: 21.0278, traffic: 20.6175, psnr_mean: 22.4292.
+
+2025-01-03 23:33:56,271 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6937, runner8: 0.8110, kobe: 0.5719, crash32: 0.7021, aerial32: 0.5318, traffic: 0.7123, ssim_mean: 0.6705.
+
+2025-01-03 23:33:56,856 - Train_video.py [line: 241] - epoch: [15][  0/100], lr: 0.000400, loss: 0.06884.
+2025-01-03 23:34:33,158 - Train_video.py [line: 252] - epoch: 15, avg_loss: 0.20946, time: 36.88s.
+
+2025-01-03 23:34:35,987 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.1539, runner8: 23.7461, kobe: 20.9861, crash32: 20.7826, aerial32: 20.9037, traffic: 20.5818, psnr_mean: 22.0257.
+
+2025-01-03 23:34:35,987 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6896, runner8: 0.8099, kobe: 0.5785, crash32: 0.7012, aerial32: 0.5341, traffic: 0.7146, ssim_mean: 0.6713.
+
+2025-01-03 23:34:36,563 - Train_video.py [line: 241] - epoch: [16][  0/100], lr: 0.000400, loss: 0.38815.
+2025-01-03 23:35:13,472 - Train_video.py [line: 252] - epoch: 16, avg_loss: 0.20438, time: 37.48s.
+
+2025-01-03 23:35:16,104 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.8412, runner8: 23.6986, kobe: 20.8708, crash32: 21.1767, aerial32: 20.9938, traffic: 20.5941, psnr_mean: 22.3626.
+
+2025-01-03 23:35:16,104 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6958, runner8: 0.8080, kobe: 0.5669, crash32: 0.7051, aerial32: 0.5333, traffic: 0.7136, ssim_mean: 0.6704.
+
+2025-01-03 23:35:16,658 - Train_video.py [line: 241] - epoch: [17][  0/100], lr: 0.000400, loss: 0.21828.
+2025-01-03 23:35:53,951 - Train_video.py [line: 252] - epoch: 17, avg_loss: 0.20564, time: 37.84s.
+
+2025-01-03 23:35:56,551 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.2194, runner8: 23.8598, kobe: 20.8399, crash32: 21.1931, aerial32: 21.0572, traffic: 20.6639, psnr_mean: 22.4722.
+
+2025-01-03 23:35:56,551 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6909, runner8: 0.8090, kobe: 0.5510, crash32: 0.7092, aerial32: 0.5379, traffic: 0.7172, ssim_mean: 0.6692.
+
+2025-01-03 23:35:57,117 - Train_video.py [line: 241] - epoch: [18][  0/100], lr: 0.000400, loss: 0.19074.
+2025-01-03 23:36:33,473 - Train_video.py [line: 252] - epoch: 18, avg_loss: 0.21300, time: 36.92s.
+
+2025-01-03 23:36:36,408 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.2926, runner8: 23.8024, kobe: 20.8416, crash32: 21.0008, aerial32: 20.9564, traffic: 20.5749, psnr_mean: 22.0781.
+
+2025-01-03 23:36:36,409 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6649, runner8: 0.8090, kobe: 0.5481, crash32: 0.6916, aerial32: 0.5333, traffic: 0.7163, ssim_mean: 0.6605.
+
+2025-01-03 23:36:36,986 - Train_video.py [line: 241] - epoch: [19][  0/100], lr: 0.000400, loss: 0.23932.
+2025-01-03 23:37:13,149 - Train_video.py [line: 252] - epoch: 19, avg_loss: 0.20749, time: 36.74s.
+
+2025-01-03 23:37:15,873 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.6678, runner8: 23.9593, kobe: 20.9926, crash32: 21.3195, aerial32: 21.0954, traffic: 20.7051, psnr_mean: 22.4566.
+
+2025-01-03 23:37:15,873 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6680, runner8: 0.8049, kobe: 0.5730, crash32: 0.6894, aerial32: 0.5332, traffic: 0.7118, ssim_mean: 0.6634.
+
+2025-01-03 23:37:16,463 - Train_video.py [line: 241] - epoch: [20][  0/100], lr: 0.000400, loss: 0.21588.
+2025-01-03 23:37:53,781 - Train_video.py [line: 252] - epoch: 20, avg_loss: 0.21070, time: 37.91s.
+
+2025-01-03 23:37:56,388 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.2122, runner8: 24.4715, kobe: 21.2606, crash32: 21.2113, aerial32: 21.1995, traffic: 20.8396, psnr_mean: 22.5325.
+
+2025-01-03 23:37:56,388 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5779, runner8: 0.7971, kobe: 0.5580, crash32: 0.6360, aerial32: 0.5282, traffic: 0.7092, ssim_mean: 0.6344.
+
+2025-01-03 23:37:56,966 - Train_video.py [line: 241] - epoch: [21][  0/100], lr: 0.000400, loss: 0.16657.
+2025-01-03 23:38:33,196 - Train_video.py [line: 252] - epoch: 21, avg_loss: 0.19952, time: 36.80s.
+
+2025-01-03 23:38:36,067 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.6687, runner8: 26.2007, kobe: 21.7523, crash32: 22.0062, aerial32: 21.4580, traffic: 21.2510, psnr_mean: 23.0562.
+
+2025-01-03 23:38:36,068 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5252, runner8: 0.8125, kobe: 0.5040, crash32: 0.6019, aerial32: 0.5326, traffic: 0.7153, ssim_mean: 0.6152.
+
+2025-01-03 23:38:36,632 - Train_video.py [line: 241] - epoch: [22][  0/100], lr: 0.000400, loss: 0.21083.
+2025-01-03 23:39:12,918 - Train_video.py [line: 252] - epoch: 22, avg_loss: 0.19766, time: 36.85s.
+
+2025-01-03 23:39:15,793 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.2017, runner8: 27.3874, kobe: 22.9668, crash32: 22.6571, aerial32: 21.9431, traffic: 21.8056, psnr_mean: 23.9936.
+
+2025-01-03 23:39:15,794 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5648, runner8: 0.8248, kobe: 0.5514, crash32: 0.6360, aerial32: 0.5540, traffic: 0.7327, ssim_mean: 0.6439.
+
+2025-01-03 23:39:16,407 - Train_video.py [line: 241] - epoch: [23][  0/100], lr: 0.000400, loss: 0.19234.
+2025-01-03 23:39:53,363 - Train_video.py [line: 252] - epoch: 23, avg_loss: 0.18805, time: 37.57s.
+
+2025-01-03 23:39:56,076 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.1082, runner8: 27.6801, kobe: 23.3043, crash32: 22.9120, aerial32: 22.1115, traffic: 22.0005, psnr_mean: 24.1861.
+
+2025-01-03 23:39:56,077 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5724, runner8: 0.8394, kobe: 0.5651, crash32: 0.6426, aerial32: 0.5699, traffic: 0.7346, ssim_mean: 0.6540.
+
+2025-01-03 23:39:56,639 - Train_video.py [line: 241] - epoch: [24][  0/100], lr: 0.000400, loss: 0.16787.
+2025-01-03 23:40:33,079 - Train_video.py [line: 252] - epoch: 24, avg_loss: 0.18307, time: 37.00s.
+
+2025-01-03 23:40:35,854 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.7461, runner8: 28.0155, kobe: 23.8622, crash32: 23.2652, aerial32: 22.3146, traffic: 22.1364, psnr_mean: 24.5567.
+
+2025-01-03 23:40:35,854 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.5931, runner8: 0.8540, kobe: 0.5988, crash32: 0.6644, aerial32: 0.5846, traffic: 0.7470, ssim_mean: 0.6737.
+
+2025-01-03 23:40:36,471 - Train_video.py [line: 241] - epoch: [25][  0/100], lr: 0.000400, loss: 0.18779.
+2025-01-03 23:41:13,136 - Train_video.py [line: 252] - epoch: 25, avg_loss: 0.17639, time: 37.28s.
+
+2025-01-03 23:41:16,076 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.2451, runner8: 27.8635, kobe: 23.8946, crash32: 22.8859, aerial32: 22.1764, traffic: 22.0206, psnr_mean: 24.1810.
+
+2025-01-03 23:41:16,077 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6009, runner8: 0.8598, kobe: 0.6035, crash32: 0.6733, aerial32: 0.5916, traffic: 0.7549, ssim_mean: 0.6807.
+
+2025-01-03 23:41:16,700 - Train_video.py [line: 241] - epoch: [26][  0/100], lr: 0.000400, loss: 0.17519.
+2025-01-03 23:41:53,162 - Train_video.py [line: 252] - epoch: 26, avg_loss: 0.18036, time: 37.08s.
+
+2025-01-03 23:41:55,798 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.4225, runner8: 28.9441, kobe: 24.2235, crash32: 23.8263, aerial32: 22.6022, traffic: 22.4297, psnr_mean: 25.2414.
+
+2025-01-03 23:41:55,798 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6718, runner8: 0.8748, kobe: 0.6108, crash32: 0.7177, aerial32: 0.6059, traffic: 0.7658, ssim_mean: 0.7078.
+
+2025-01-03 23:41:56,403 - Train_video.py [line: 241] - epoch: [27][  0/100], lr: 0.000400, loss: 0.18497.
+2025-01-03 23:42:32,535 - Train_video.py [line: 252] - epoch: 27, avg_loss: 0.16662, time: 36.73s.
+
+2025-01-03 23:42:35,378 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.7390, runner8: 28.9419, kobe: 24.6528, crash32: 23.8420, aerial32: 22.6581, traffic: 22.4271, psnr_mean: 25.2102.
+
+2025-01-03 23:42:35,378 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6939, runner8: 0.8777, kobe: 0.6376, crash32: 0.7283, aerial32: 0.6141, traffic: 0.7634, ssim_mean: 0.7192.
+
+2025-01-03 23:42:35,981 - Train_video.py [line: 241] - epoch: [28][  0/100], lr: 0.000400, loss: 0.17231.
+2025-01-03 23:43:12,731 - Train_video.py [line: 252] - epoch: 28, avg_loss: 0.17265, time: 37.35s.
+
+2025-01-03 23:43:15,636 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.1105, runner8: 29.2422, kobe: 24.9221, crash32: 24.0604, aerial32: 22.7442, traffic: 22.6049, psnr_mean: 25.6141.
+
+2025-01-03 23:43:15,636 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.6954, runner8: 0.8791, kobe: 0.6462, crash32: 0.7365, aerial32: 0.6183, traffic: 0.7741, ssim_mean: 0.7249.
+
+2025-01-03 23:43:16,213 - Train_video.py [line: 241] - epoch: [29][  0/100], lr: 0.000400, loss: 0.11215.
+2025-01-03 23:43:52,255 - Train_video.py [line: 252] - epoch: 29, avg_loss: 0.16693, time: 36.62s.
+
+2025-01-03 23:43:55,106 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.4355, runner8: 29.0248, kobe: 24.9804, crash32: 24.1671, aerial32: 22.7518, traffic: 22.6221, psnr_mean: 25.6636.
+
+2025-01-03 23:43:55,106 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7202, runner8: 0.8825, kobe: 0.6703, crash32: 0.7481, aerial32: 0.6203, traffic: 0.7702, ssim_mean: 0.7353.
+
+2025-01-03 23:43:55,684 - Train_video.py [line: 241] - epoch: [30][  0/100], lr: 0.000400, loss: 0.16964.
+2025-01-03 23:44:33,067 - Train_video.py [line: 252] - epoch: 30, avg_loss: 0.16763, time: 37.96s.
+
+2025-01-03 23:44:36,011 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 24.7242, runner8: 28.8696, kobe: 24.6954, crash32: 22.8415, aerial32: 22.3580, traffic: 22.4705, psnr_mean: 24.3266.
+
+2025-01-03 23:44:36,011 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7606, runner8: 0.8865, kobe: 0.6419, crash32: 0.7626, aerial32: 0.6180, traffic: 0.7691, ssim_mean: 0.7398.
+
+2025-01-03 23:44:36,591 - Train_video.py [line: 241] - epoch: [31][  0/100], lr: 0.000400, loss: 0.18299.
+2025-01-03 23:45:13,666 - Train_video.py [line: 252] - epoch: 31, avg_loss: 0.17180, time: 37.65s.
+
+2025-01-03 23:45:16,408 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.4292, runner8: 29.1974, kobe: 24.6858, crash32: 24.0846, aerial32: 22.7334, traffic: 22.5533, psnr_mean: 25.4473.
+
+2025-01-03 23:45:16,408 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7055, runner8: 0.8841, kobe: 0.6348, crash32: 0.7402, aerial32: 0.6223, traffic: 0.7738, ssim_mean: 0.7268.
+
+2025-01-03 23:45:16,968 - Train_video.py [line: 241] - epoch: [32][  0/100], lr: 0.000400, loss: 0.18900.
+2025-01-03 23:45:53,539 - Train_video.py [line: 252] - epoch: 32, avg_loss: 0.17246, time: 37.13s.
+
+2025-01-03 23:45:56,155 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.1913, runner8: 29.5865, kobe: 25.5659, crash32: 24.3251, aerial32: 22.9509, traffic: 22.8928, psnr_mean: 25.9188.
+
+2025-01-03 23:45:56,155 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7295, runner8: 0.8879, kobe: 0.6973, crash32: 0.7601, aerial32: 0.6314, traffic: 0.7863, ssim_mean: 0.7488.
+
+2025-01-03 23:45:56,735 - Train_video.py [line: 241] - epoch: [33][  0/100], lr: 0.000400, loss: 0.10730.
+2025-01-03 23:46:33,609 - Train_video.py [line: 252] - epoch: 33, avg_loss: 0.16494, time: 37.45s.
+
+2025-01-03 23:46:36,602 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.7397, runner8: 29.7799, kobe: 25.2176, crash32: 24.6523, aerial32: 23.0153, traffic: 22.8254, psnr_mean: 26.0384.
+
+2025-01-03 23:46:36,602 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7493, runner8: 0.8939, kobe: 0.6652, crash32: 0.7668, aerial32: 0.6333, traffic: 0.7825, ssim_mean: 0.7485.
+
+2025-01-03 23:46:37,183 - Train_video.py [line: 241] - epoch: [34][  0/100], lr: 0.000400, loss: 0.17844.
+2025-01-03 23:47:13,376 - Train_video.py [line: 252] - epoch: 34, avg_loss: 0.16415, time: 36.77s.
+
+2025-01-03 23:47:16,232 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.0676, runner8: 29.7185, kobe: 25.4068, crash32: 24.4774, aerial32: 22.9773, traffic: 22.8884, psnr_mean: 25.9227.
+
+2025-01-03 23:47:16,232 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7392, runner8: 0.8920, kobe: 0.6738, crash32: 0.7593, aerial32: 0.6307, traffic: 0.7827, ssim_mean: 0.7463.
+
+2025-01-03 23:47:16,805 - Train_video.py [line: 241] - epoch: [35][  0/100], lr: 0.000400, loss: 0.18912.
+2025-01-03 23:47:53,966 - Train_video.py [line: 252] - epoch: 35, avg_loss: 0.16081, time: 37.73s.
+
+2025-01-03 23:47:56,636 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.3131, runner8: 29.7246, kobe: 25.9453, crash32: 24.5493, aerial32: 23.0576, traffic: 22.7828, psnr_mean: 26.0621.
+
+2025-01-03 23:47:56,636 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7151, runner8: 0.8939, kobe: 0.7113, crash32: 0.7450, aerial32: 0.6383, traffic: 0.7779, ssim_mean: 0.7469.
+
+2025-01-03 23:47:57,191 - Train_video.py [line: 241] - epoch: [36][  0/100], lr: 0.000400, loss: 0.17452.
+2025-01-03 23:48:34,084 - Train_video.py [line: 252] - epoch: 36, avg_loss: 0.16364, time: 37.44s.
+
+2025-01-03 23:48:36,798 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.1783, runner8: 29.7635, kobe: 25.9884, crash32: 24.5970, aerial32: 22.9855, traffic: 22.7905, psnr_mean: 26.0505.
+
+2025-01-03 23:48:36,799 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7345, runner8: 0.8966, kobe: 0.7235, crash32: 0.7556, aerial32: 0.6336, traffic: 0.7761, ssim_mean: 0.7533.
+
+2025-01-03 23:48:37,383 - Train_video.py [line: 241] - epoch: [37][  0/100], lr: 0.000400, loss: 0.03770.
+2025-01-03 23:49:13,892 - Train_video.py [line: 252] - epoch: 37, avg_loss: 0.16185, time: 37.09s.
+
+2025-01-03 23:49:16,741 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.0616, runner8: 29.5777, kobe: 25.7327, crash32: 24.2665, aerial32: 22.8487, traffic: 22.9793, psnr_mean: 25.7444.
+
+2025-01-03 23:49:16,741 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7256, runner8: 0.8929, kobe: 0.7096, crash32: 0.7641, aerial32: 0.6301, traffic: 0.7910, ssim_mean: 0.7522.
+
+2025-01-03 23:49:17,308 - Train_video.py [line: 241] - epoch: [38][  0/100], lr: 0.000400, loss: 0.16883.
+2025-01-03 23:49:53,322 - Train_video.py [line: 252] - epoch: 38, avg_loss: 0.16213, time: 36.58s.
+
+2025-01-03 23:49:56,641 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.8423, runner8: 30.0474, kobe: 25.6951, crash32: 24.4807, aerial32: 23.1566, traffic: 22.9694, psnr_mean: 25.6986.
+
+2025-01-03 23:49:56,641 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7461, runner8: 0.9034, kobe: 0.6985, crash32: 0.7676, aerial32: 0.6473, traffic: 0.7873, ssim_mean: 0.7584.
+
+2025-01-03 23:49:57,241 - Train_video.py [line: 241] - epoch: [39][  0/100], lr: 0.000400, loss: 0.17010.
+2025-01-03 23:50:33,619 - Train_video.py [line: 252] - epoch: 39, avg_loss: 0.15693, time: 36.98s.
+
+2025-01-03 23:50:36,338 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.2014, runner8: 29.9829, kobe: 25.9680, crash32: 24.9095, aerial32: 23.2310, traffic: 23.0098, psnr_mean: 26.2171.
+
+2025-01-03 23:50:36,338 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7006, runner8: 0.9015, kobe: 0.7129, crash32: 0.7524, aerial32: 0.6408, traffic: 0.7939, ssim_mean: 0.7503.
+
+2025-01-03 23:50:36,914 - Train_video.py [line: 241] - epoch: [40][  0/100], lr: 0.000400, loss: 0.17960.
+2025-01-03 23:51:14,298 - Train_video.py [line: 252] - epoch: 40, avg_loss: 0.15812, time: 37.96s.
+
+2025-01-03 23:51:17,031 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.6620, runner8: 30.0092, kobe: 25.5960, crash32: 24.8415, aerial32: 23.1556, traffic: 23.0629, psnr_mean: 26.2212.
+
+2025-01-03 23:51:17,032 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7369, runner8: 0.9037, kobe: 0.6875, crash32: 0.7642, aerial32: 0.6424, traffic: 0.7883, ssim_mean: 0.7538.
+
+2025-01-03 23:51:17,612 - Train_video.py [line: 241] - epoch: [41][  0/100], lr: 0.000400, loss: 0.15908.
+2025-01-03 23:51:54,286 - Train_video.py [line: 252] - epoch: 41, avg_loss: 0.15299, time: 37.25s.
+
+2025-01-03 23:51:57,085 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.7754, runner8: 29.9656, kobe: 26.0948, crash32: 24.3436, aerial32: 23.1243, traffic: 22.8263, psnr_mean: 25.8550.
+
+2025-01-03 23:51:57,086 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7192, runner8: 0.9049, kobe: 0.7298, crash32: 0.7606, aerial32: 0.6542, traffic: 0.7939, ssim_mean: 0.7604.
+
+2025-01-03 23:51:57,644 - Train_video.py [line: 241] - epoch: [42][  0/100], lr: 0.000400, loss: 0.17321.
+2025-01-03 23:52:34,350 - Train_video.py [line: 252] - epoch: 42, avg_loss: 0.15598, time: 37.26s.
+
+2025-01-03 23:52:37,049 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.8387, runner8: 29.6604, kobe: 26.2960, crash32: 24.5287, aerial32: 23.0219, traffic: 22.6551, psnr_mean: 25.6668.
+
+2025-01-03 23:52:37,049 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7225, runner8: 0.9042, kobe: 0.7536, crash32: 0.7528, aerial32: 0.6492, traffic: 0.7775, ssim_mean: 0.7600.
+
+2025-01-03 23:52:37,627 - Train_video.py [line: 241] - epoch: [43][  0/100], lr: 0.000400, loss: 0.12180.
+2025-01-03 23:53:14,431 - Train_video.py [line: 252] - epoch: 43, avg_loss: 0.15740, time: 37.38s.
+
+2025-01-03 23:53:17,327 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.5264, runner8: 30.1886, kobe: 26.0870, crash32: 25.2754, aerial32: 23.4195, traffic: 23.2035, psnr_mean: 26.4501.
+
+2025-01-03 23:53:17,327 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7473, runner8: 0.9093, kobe: 0.7221, crash32: 0.7807, aerial32: 0.6566, traffic: 0.8030, ssim_mean: 0.7698.
+
+2025-01-03 23:53:17,890 - Train_video.py [line: 241] - epoch: [44][  0/100], lr: 0.000400, loss: 0.10041.
+2025-01-03 23:53:54,278 - Train_video.py [line: 252] - epoch: 44, avg_loss: 0.15275, time: 36.95s.
+
+2025-01-03 23:53:57,043 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.7950, runner8: 30.4433, kobe: 26.1389, crash32: 24.8081, aerial32: 23.3303, traffic: 23.1830, psnr_mean: 26.1164.
+
+2025-01-03 23:53:57,043 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7500, runner8: 0.9138, kobe: 0.7107, crash32: 0.7804, aerial32: 0.6539, traffic: 0.8029, ssim_mean: 0.7686.
+
+2025-01-03 23:53:57,647 - Train_video.py [line: 241] - epoch: [45][  0/100], lr: 0.000400, loss: 0.16522.
+2025-01-03 23:54:33,743 - Train_video.py [line: 252] - epoch: 45, avg_loss: 0.15614, time: 36.70s.
+
+2025-01-03 23:54:36,465 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.0072, runner8: 30.5264, kobe: 26.4725, crash32: 25.0154, aerial32: 23.3880, traffic: 23.2585, psnr_mean: 26.6113.
+
+2025-01-03 23:54:36,466 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7617, runner8: 0.9145, kobe: 0.7382, crash32: 0.7792, aerial32: 0.6619, traffic: 0.8022, ssim_mean: 0.7763.
+
+2025-01-03 23:54:37,024 - Train_video.py [line: 241] - epoch: [46][  0/100], lr: 0.000400, loss: 0.06555.
+2025-01-03 23:55:13,645 - Train_video.py [line: 252] - epoch: 46, avg_loss: 0.14802, time: 37.18s.
+
+2025-01-03 23:55:16,246 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.1589, runner8: 29.9290, kobe: 26.4261, crash32: 25.0854, aerial32: 23.3391, traffic: 23.1790, psnr_mean: 26.0196.
+
+2025-01-03 23:55:16,246 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7726, runner8: 0.9135, kobe: 0.7379, crash32: 0.7846, aerial32: 0.6605, traffic: 0.8031, ssim_mean: 0.7787.
+
+2025-01-03 23:55:16,832 - Train_video.py [line: 241] - epoch: [47][  0/100], lr: 0.000400, loss: 0.16669.
+2025-01-03 23:55:53,553 - Train_video.py [line: 252] - epoch: 47, avg_loss: 0.15563, time: 37.30s.
+
+2025-01-03 23:55:56,381 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.3368, runner8: 30.3737, kobe: 26.2615, crash32: 25.2481, aerial32: 23.3538, traffic: 23.0135, psnr_mean: 26.4312.
+
+2025-01-03 23:55:56,381 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7663, runner8: 0.9142, kobe: 0.7282, crash32: 0.7869, aerial32: 0.6557, traffic: 0.8004, ssim_mean: 0.7753.
+
+2025-01-03 23:55:56,964 - Train_video.py [line: 241] - epoch: [48][  0/100], lr: 0.000400, loss: 0.17436.
+2025-01-03 23:56:33,046 - Train_video.py [line: 252] - epoch: 48, avg_loss: 0.15395, time: 36.66s.
+
+2025-01-03 23:56:36,014 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.3784, runner8: 30.5140, kobe: 25.0225, crash32: 25.1223, aerial32: 23.4040, traffic: 23.0758, psnr_mean: 26.2528.
+
+2025-01-03 23:56:36,014 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7456, runner8: 0.9149, kobe: 0.6476, crash32: 0.7681, aerial32: 0.6619, traffic: 0.7934, ssim_mean: 0.7552.
+
+2025-01-03 23:56:36,609 - Train_video.py [line: 241] - epoch: [49][  0/100], lr: 0.000400, loss: 0.16282.
+2025-01-03 23:57:13,873 - Train_video.py [line: 252] - epoch: 49, avg_loss: 0.14996, time: 37.86s.
+
+2025-01-03 23:57:16,617 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.2274, runner8: 30.4404, kobe: 26.7009, crash32: 25.2362, aerial32: 23.4237, traffic: 23.3660, psnr_mean: 26.7324.
+
+2025-01-03 23:57:16,617 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7845, runner8: 0.9167, kobe: 0.7540, crash32: 0.7898, aerial32: 0.6653, traffic: 0.8074, ssim_mean: 0.7863.
+
+2025-01-03 23:57:17,218 - Train_video.py [line: 241] - epoch: [50][  0/100], lr: 0.000400, loss: 0.15990.
+2025-01-03 23:57:54,079 - Train_video.py [line: 252] - epoch: 50, avg_loss: 0.15105, time: 37.46s.
+
+2025-01-03 23:57:56,708 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.8784, runner8: 29.2859, kobe: 23.7049, crash32: 24.5389, aerial32: 23.1771, traffic: 22.8695, psnr_mean: 25.2425.
+
+2025-01-03 23:57:56,708 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7683, runner8: 0.9091, kobe: 0.5976, crash32: 0.7794, aerial32: 0.6607, traffic: 0.7998, ssim_mean: 0.7525.
+
+2025-01-03 23:57:57,283 - Train_video.py [line: 241] - epoch: [51][  0/100], lr: 0.000400, loss: 0.17081.
+2025-01-03 23:58:33,522 - Train_video.py [line: 252] - epoch: 51, avg_loss: 0.14652, time: 36.81s.
+
+2025-01-03 23:58:36,226 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.3072, runner8: 30.3971, kobe: 26.7212, crash32: 25.2049, aerial32: 23.4077, traffic: 23.2513, psnr_mean: 26.5482.
+
+2025-01-03 23:58:36,226 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7763, runner8: 0.9192, kobe: 0.7622, crash32: 0.7829, aerial32: 0.6670, traffic: 0.8068, ssim_mean: 0.7857.
+
+2025-01-03 23:58:36,770 - Train_video.py [line: 241] - epoch: [52][  0/100], lr: 0.000400, loss: 0.16051.
+2025-01-03 23:59:13,354 - Train_video.py [line: 252] - epoch: 52, avg_loss: 0.14819, time: 37.12s.
+
+2025-01-03 23:59:16,050 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.1536, runner8: 30.8216, kobe: 26.5527, crash32: 25.3732, aerial32: 23.4856, traffic: 23.0664, psnr_mean: 26.7422.
+
+2025-01-03 23:59:16,050 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7624, runner8: 0.9224, kobe: 0.7375, crash32: 0.7811, aerial32: 0.6683, traffic: 0.8024, ssim_mean: 0.7790.
+
+2025-01-03 23:59:16,618 - Train_video.py [line: 241] - epoch: [53][  0/100], lr: 0.000400, loss: 0.16284.
+2025-01-03 23:59:52,831 - Train_video.py [line: 252] - epoch: 53, avg_loss: 0.15344, time: 36.78s.
+
+2025-01-03 23:59:55,451 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.2228, runner8: 30.4477, kobe: 26.3840, crash32: 25.3072, aerial32: 23.3824, traffic: 23.4531, psnr_mean: 26.6995.
+
+2025-01-03 23:59:55,451 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7988, runner8: 0.9169, kobe: 0.7283, crash32: 0.7976, aerial32: 0.6576, traffic: 0.8138, ssim_mean: 0.7855.
+
+2025-01-03 23:59:56,008 - Train_video.py [line: 241] - epoch: [54][  0/100], lr: 0.000400, loss: 0.05053.
+2025-01-04 00:00:32,880 - Train_video.py [line: 252] - epoch: 54, avg_loss: 0.14773, time: 37.43s.
+
+2025-01-04 00:00:35,578 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.6406, runner8: 30.9118, kobe: 26.3263, crash32: 25.3356, aerial32: 23.4776, traffic: 23.0663, psnr_mean: 26.6263.
+
+2025-01-04 00:00:35,578 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7767, runner8: 0.9218, kobe: 0.7242, crash32: 0.7751, aerial32: 0.6634, traffic: 0.7995, ssim_mean: 0.7768.
+
+2025-01-04 00:00:36,157 - Train_video.py [line: 241] - epoch: [55][  0/100], lr: 0.000400, loss: 0.13179.
+2025-01-04 00:01:12,396 - Train_video.py [line: 252] - epoch: 55, avg_loss: 0.14761, time: 36.81s.
+
+2025-01-04 00:01:15,246 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.5404, runner8: 30.9807, kobe: 27.3772, crash32: 25.5026, aerial32: 23.5135, traffic: 23.1706, psnr_mean: 27.0142.
+
+2025-01-04 00:01:15,247 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7993, runner8: 0.9243, kobe: 0.8003, crash32: 0.7904, aerial32: 0.6675, traffic: 0.8048, ssim_mean: 0.7978.
+
+2025-01-04 00:01:15,805 - Train_video.py [line: 241] - epoch: [56][  0/100], lr: 0.000400, loss: 0.16456.
+2025-01-04 00:01:52,846 - Train_video.py [line: 252] - epoch: 56, avg_loss: 0.14681, time: 37.60s.
+
+2025-01-04 00:01:55,795 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.2994, runner8: 31.0069, kobe: 26.1554, crash32: 25.4479, aerial32: 23.5084, traffic: 23.5226, psnr_mean: 26.8234.
+
+2025-01-04 00:01:55,796 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8276, runner8: 0.9243, kobe: 0.7063, crash32: 0.8160, aerial32: 0.6657, traffic: 0.8166, ssim_mean: 0.7927.
+
+2025-01-04 00:01:56,379 - Train_video.py [line: 241] - epoch: [57][  0/100], lr: 0.000400, loss: 0.19220.
+2025-01-04 00:02:32,964 - Train_video.py [line: 252] - epoch: 57, avg_loss: 0.14773, time: 37.17s.
+
+2025-01-04 00:02:35,720 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.7176, runner8: 30.3535, kobe: 25.7745, crash32: 24.8613, aerial32: 23.3160, traffic: 23.1086, psnr_mean: 26.0219.
+
+2025-01-04 00:02:35,721 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7070, runner8: 0.9193, kobe: 0.6836, crash32: 0.7463, aerial32: 0.6579, traffic: 0.7990, ssim_mean: 0.7522.
+
+2025-01-04 00:02:36,287 - Train_video.py [line: 241] - epoch: [58][  0/100], lr: 0.000400, loss: 0.18419.
+2025-01-04 00:03:13,668 - Train_video.py [line: 252] - epoch: 58, avg_loss: 0.15187, time: 37.94s.
+
+2025-01-04 00:03:16,480 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.2677, runner8: 30.6750, kobe: 27.0742, crash32: 25.5201, aerial32: 23.5471, traffic: 23.5135, psnr_mean: 26.9329.
+
+2025-01-04 00:03:16,480 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7730, runner8: 0.9222, kobe: 0.7762, crash32: 0.7869, aerial32: 0.6694, traffic: 0.8165, ssim_mean: 0.7907.
+
+2025-01-04 00:03:17,112 - Train_video.py [line: 241] - epoch: [59][  0/100], lr: 0.000400, loss: 0.14710.
+2025-01-04 00:03:53,284 - Train_video.py [line: 252] - epoch: 59, avg_loss: 0.14173, time: 36.80s.
+
+2025-01-04 00:03:56,005 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.7148, runner8: 29.5520, kobe: 27.1192, crash32: 24.7243, aerial32: 23.0928, traffic: 23.2299, psnr_mean: 26.0722.
+
+2025-01-04 00:03:56,005 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8157, runner8: 0.9244, kobe: 0.7922, crash32: 0.8093, aerial32: 0.6686, traffic: 0.8170, ssim_mean: 0.8045.
+
+2025-01-04 00:03:56,563 - Train_video.py [line: 241] - epoch: [60][  0/100], lr: 0.000400, loss: 0.16936.
+2025-01-04 00:04:33,557 - Train_video.py [line: 252] - epoch: 60, avg_loss: 0.14394, time: 37.55s.
+
+2025-01-04 00:04:36,213 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 26.4027, runner8: 30.6494, kobe: 25.9286, crash32: 24.1175, aerial32: 23.1244, traffic: 23.1229, psnr_mean: 25.5576.
+
+2025-01-04 00:04:36,214 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7969, runner8: 0.9228, kobe: 0.6918, crash32: 0.7853, aerial32: 0.6630, traffic: 0.8023, ssim_mean: 0.7770.
+
+2025-01-04 00:04:36,784 - Train_video.py [line: 241] - epoch: [61][  0/100], lr: 0.000400, loss: 0.15914.
+2025-01-04 00:05:13,471 - Train_video.py [line: 252] - epoch: 61, avg_loss: 0.14470, time: 37.25s.
+
+2025-01-04 00:05:16,244 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.6413, runner8: 31.2187, kobe: 27.3547, crash32: 25.5801, aerial32: 23.6581, traffic: 23.7980, psnr_mean: 27.0418.
+
+2025-01-04 00:05:16,244 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8018, runner8: 0.9271, kobe: 0.7712, crash32: 0.7972, aerial32: 0.6751, traffic: 0.8242, ssim_mean: 0.7994.
+
+2025-01-04 00:05:16,847 - Train_video.py [line: 241] - epoch: [62][  0/100], lr: 0.000400, loss: 0.16678.
+2025-01-04 00:05:53,671 - Train_video.py [line: 252] - epoch: 62, avg_loss: 0.14443, time: 37.42s.
+
+2025-01-04 00:05:56,720 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.4768, runner8: 30.9163, kobe: 26.4483, crash32: 25.7695, aerial32: 23.6052, traffic: 23.6200, psnr_mean: 27.1393.
+
+2025-01-04 00:05:56,720 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8152, runner8: 0.9274, kobe: 0.7130, crash32: 0.8129, aerial32: 0.6729, traffic: 0.8200, ssim_mean: 0.7936.
+
+2025-01-04 00:05:57,306 - Train_video.py [line: 241] - epoch: [63][  0/100], lr: 0.000400, loss: 0.16463.
+2025-01-04 00:06:33,673 - Train_video.py [line: 252] - epoch: 63, avg_loss: 0.14426, time: 36.95s.
+
+2025-01-04 00:06:36,531 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.8206, runner8: 31.3832, kobe: 27.3683, crash32: 25.8368, aerial32: 23.6416, traffic: 23.6325, psnr_mean: 27.2805.
+
+2025-01-04 00:06:36,532 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8025, runner8: 0.9292, kobe: 0.7727, crash32: 0.7973, aerial32: 0.6755, traffic: 0.8156, ssim_mean: 0.7988.
+
+2025-01-04 00:06:37,113 - Train_video.py [line: 241] - epoch: [64][  0/100], lr: 0.000400, loss: 0.18592.
+2025-01-04 00:07:14,011 - Train_video.py [line: 252] - epoch: 64, avg_loss: 0.14856, time: 37.48s.
+
+2025-01-04 00:07:16,994 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.2167, runner8: 31.5390, kobe: 27.3514, crash32: 25.7380, aerial32: 23.7728, traffic: 23.9063, psnr_mean: 27.4207.
+
+2025-01-04 00:07:16,994 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8227, runner8: 0.9319, kobe: 0.7622, crash32: 0.8180, aerial32: 0.6807, traffic: 0.8297, ssim_mean: 0.8075.
+
+2025-01-04 00:07:17,574 - Train_video.py [line: 241] - epoch: [65][  0/100], lr: 0.000400, loss: 0.14973.
+2025-01-04 00:07:54,377 - Train_video.py [line: 252] - epoch: 65, avg_loss: 0.14105, time: 37.38s.
+
+2025-01-04 00:07:57,195 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.3036, runner8: 31.4186, kobe: 27.9581, crash32: 25.9287, aerial32: 23.7096, traffic: 23.7570, psnr_mean: 27.5126.
+
+2025-01-04 00:07:57,196 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8134, runner8: 0.9311, kobe: 0.8102, crash32: 0.8175, aerial32: 0.6793, traffic: 0.8244, ssim_mean: 0.8127.
+
+2025-01-04 00:07:57,783 - Train_video.py [line: 241] - epoch: [66][  0/100], lr: 0.000400, loss: 0.15396.
+2025-01-04 00:08:34,162 - Train_video.py [line: 252] - epoch: 66, avg_loss: 0.13928, time: 36.96s.
+
+2025-01-04 00:08:36,983 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.5427, runner8: 31.4384, kobe: 27.2967, crash32: 25.8285, aerial32: 23.6999, traffic: 23.8845, psnr_mean: 27.4485.
+
+2025-01-04 00:08:36,983 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8164, runner8: 0.9308, kobe: 0.7730, crash32: 0.8135, aerial32: 0.6756, traffic: 0.8275, ssim_mean: 0.8062.
+
+2025-01-04 00:08:37,560 - Train_video.py [line: 241] - epoch: [67][  0/100], lr: 0.000400, loss: 0.11705.
+2025-01-04 00:09:13,969 - Train_video.py [line: 252] - epoch: 67, avg_loss: 0.14481, time: 36.98s.
+
+2025-01-04 00:09:16,681 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.0185, runner8: 31.6320, kobe: 27.6078, crash32: 25.9326, aerial32: 23.8120, traffic: 23.6334, psnr_mean: 27.4394.
+
+2025-01-04 00:09:16,681 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8166, runner8: 0.9341, kobe: 0.7938, crash32: 0.8055, aerial32: 0.6838, traffic: 0.8214, ssim_mean: 0.8092.
+
+2025-01-04 00:09:17,262 - Train_video.py [line: 241] - epoch: [68][  0/100], lr: 0.000400, loss: 0.08450.
+2025-01-04 00:09:53,246 - Train_video.py [line: 252] - epoch: 68, avg_loss: 0.14001, time: 36.56s.
+
+2025-01-04 00:09:55,856 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 28.6499, runner8: 30.9942, kobe: 27.1385, crash32: 25.3275, aerial32: 23.7960, traffic: 23.6308, psnr_mean: 26.5895.
+
+2025-01-04 00:09:55,856 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8166, runner8: 0.9264, kobe: 0.7533, crash32: 0.8079, aerial32: 0.6815, traffic: 0.8238, ssim_mean: 0.8016.
+
+2025-01-04 00:09:56,453 - Train_video.py [line: 241] - epoch: [69][  0/100], lr: 0.000400, loss: 0.13814.
+2025-01-04 00:10:33,030 - Train_video.py [line: 252] - epoch: 69, avg_loss: 0.13835, time: 37.17s.
+
+2025-01-04 00:10:35,962 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.2402, runner8: 31.3183, kobe: 27.2775, crash32: 25.9763, aerial32: 23.8474, traffic: 23.5975, psnr_mean: 27.3762.
+
+2025-01-04 00:10:35,963 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8261, runner8: 0.9312, kobe: 0.7514, crash32: 0.8068, aerial32: 0.6833, traffic: 0.8211, ssim_mean: 0.8033.
+
+2025-01-04 00:10:36,581 - Train_video.py [line: 241] - epoch: [70][  0/100], lr: 0.000400, loss: 0.15500.
+2025-01-04 00:11:12,900 - Train_video.py [line: 252] - epoch: 70, avg_loss: 0.13826, time: 36.93s.
+
+2025-01-04 00:11:15,578 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.8852, runner8: 30.3816, kobe: 27.7665, crash32: 25.6149, aerial32: 23.6867, traffic: 23.9191, psnr_mean: 27.0423.
+
+2025-01-04 00:11:15,578 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8067, runner8: 0.9311, kobe: 0.8308, crash32: 0.8146, aerial32: 0.6825, traffic: 0.8303, ssim_mean: 0.8160.
+
+2025-01-04 00:11:16,188 - Train_video.py [line: 241] - epoch: [71][  0/100], lr: 0.000400, loss: 0.15369.
+2025-01-04 00:11:53,746 - Train_video.py [line: 252] - epoch: 71, avg_loss: 0.14316, time: 38.16s.
+
+2025-01-04 00:11:56,574 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.5843, runner8: 31.3823, kobe: 27.4689, crash32: 26.0748, aerial32: 23.9103, traffic: 24.0692, psnr_mean: 27.5816.
+
+2025-01-04 00:11:56,574 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8192, runner8: 0.9345, kobe: 0.7639, crash32: 0.8088, aerial32: 0.6955, traffic: 0.8338, ssim_mean: 0.8093.
+
+2025-01-04 00:11:57,162 - Train_video.py [line: 241] - epoch: [72][  0/100], lr: 0.000400, loss: 0.11529.
+2025-01-04 00:12:33,851 - Train_video.py [line: 252] - epoch: 72, avg_loss: 0.14215, time: 37.27s.
+
+2025-01-04 00:12:36,739 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.9754, runner8: 31.3799, kobe: 27.8180, crash32: 25.9122, aerial32: 23.8387, traffic: 23.9816, psnr_mean: 27.4843.
+
+2025-01-04 00:12:36,740 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7901, runner8: 0.9292, kobe: 0.8003, crash32: 0.7886, aerial32: 0.6865, traffic: 0.8282, ssim_mean: 0.8038.
+
+2025-01-04 00:12:37,310 - Train_video.py [line: 241] - epoch: [73][  0/100], lr: 0.000400, loss: 0.15556.
+2025-01-04 00:13:14,289 - Train_video.py [line: 252] - epoch: 73, avg_loss: 0.14115, time: 37.54s.
+
+2025-01-04 00:13:16,995 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.7039, runner8: 31.4428, kobe: 28.1745, crash32: 25.6479, aerial32: 23.9409, traffic: 24.0244, psnr_mean: 27.1557.
+
+2025-01-04 00:13:16,995 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8192, runner8: 0.9358, kobe: 0.8161, crash32: 0.7983, aerial32: 0.6951, traffic: 0.8321, ssim_mean: 0.8161.
+
+2025-01-04 00:13:17,576 - Train_video.py [line: 241] - epoch: [74][  0/100], lr: 0.000400, loss: 0.15026.
+2025-01-04 00:13:54,624 - Train_video.py [line: 252] - epoch: 74, avg_loss: 0.14012, time: 37.63s.
+
+2025-01-04 00:13:57,475 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.1072, runner8: 31.3133, kobe: 27.6891, crash32: 25.9870, aerial32: 23.8785, traffic: 23.5717, psnr_mean: 27.2578.
+
+2025-01-04 00:13:57,475 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8203, runner8: 0.9329, kobe: 0.7844, crash32: 0.8102, aerial32: 0.6873, traffic: 0.8238, ssim_mean: 0.8098.
+
+2025-01-04 00:13:58,054 - Train_video.py [line: 241] - epoch: [75][  0/100], lr: 0.000400, loss: 0.10828.
+2025-01-04 00:14:34,241 - Train_video.py [line: 252] - epoch: 75, avg_loss: 0.13765, time: 36.76s.
+
+2025-01-04 00:14:37,012 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.6350, runner8: 31.8574, kobe: 28.1920, crash32: 25.9813, aerial32: 24.0199, traffic: 23.7467, psnr_mean: 27.4054.
+
+2025-01-04 00:14:37,013 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8268, runner8: 0.9377, kobe: 0.8145, crash32: 0.8300, aerial32: 0.6980, traffic: 0.8274, ssim_mean: 0.8224.
+
+2025-01-04 00:14:37,597 - Train_video.py [line: 241] - epoch: [76][  0/100], lr: 0.000400, loss: 0.15141.
+2025-01-04 00:15:14,205 - Train_video.py [line: 252] - epoch: 76, avg_loss: 0.14099, time: 37.19s.
+
+2025-01-04 00:15:17,117 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 27.5222, runner8: 31.2355, kobe: 27.8797, crash32: 25.2005, aerial32: 23.8222, traffic: 24.0150, psnr_mean: 26.6125.
+
+2025-01-04 00:15:17,117 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7574, runner8: 0.9333, kobe: 0.8132, crash32: 0.7763, aerial32: 0.6936, traffic: 0.8336, ssim_mean: 0.8012.
+
+2025-01-04 00:15:17,725 - Train_video.py [line: 241] - epoch: [77][  0/100], lr: 0.000400, loss: 0.17030.
+2025-01-04 00:15:54,328 - Train_video.py [line: 252] - epoch: 77, avg_loss: 0.13591, time: 37.21s.
+
+2025-01-04 00:15:57,103 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.3919, runner8: 31.4962, kobe: 27.7822, crash32: 25.9959, aerial32: 24.0398, traffic: 24.1126, psnr_mean: 27.6364.
+
+2025-01-04 00:15:57,103 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8458, runner8: 0.9379, kobe: 0.7789, crash32: 0.8248, aerial32: 0.6927, traffic: 0.8340, ssim_mean: 0.8190.
+
+2025-01-04 00:15:57,696 - Train_video.py [line: 241] - epoch: [78][  0/100], lr: 0.000400, loss: 0.15210.
+2025-01-04 00:16:34,317 - Train_video.py [line: 252] - epoch: 78, avg_loss: 0.14351, time: 37.21s.
+
+2025-01-04 00:16:37,002 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.4794, runner8: 31.4154, kobe: 27.9677, crash32: 26.1366, aerial32: 23.9429, traffic: 23.9896, psnr_mean: 27.6553.
+
+2025-01-04 00:16:37,002 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8078, runner8: 0.9361, kobe: 0.7951, crash32: 0.8227, aerial32: 0.6925, traffic: 0.8332, ssim_mean: 0.8146.
+
+2025-01-04 00:16:37,566 - Train_video.py [line: 241] - epoch: [79][  0/100], lr: 0.000400, loss: 0.14895.
+2025-01-04 00:17:13,853 - Train_video.py [line: 252] - epoch: 79, avg_loss: 0.13361, time: 36.85s.
+
+2025-01-04 00:17:16,730 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.8105, runner8: 32.0814, kobe: 28.4168, crash32: 25.9680, aerial32: 24.1003, traffic: 23.9939, psnr_mean: 27.3951.
+
+2025-01-04 00:17:16,730 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8230, runner8: 0.9412, kobe: 0.8100, crash32: 0.8209, aerial32: 0.7074, traffic: 0.8306, ssim_mean: 0.8222.
+
+2025-01-04 00:17:17,308 - Train_video.py [line: 241] - epoch: [80][  0/100], lr: 0.000400, loss: 0.15242.
+2025-01-04 00:17:53,718 - Train_video.py [line: 252] - epoch: 80, avg_loss: 0.13977, time: 36.98s.
+
+2025-01-04 00:17:56,501 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 33.4034, runner8: 31.9309, kobe: 28.1554, crash32: 26.1882, aerial32: 24.1093, traffic: 24.1684, psnr_mean: 27.9926.
+
+2025-01-04 00:17:56,501 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8455, runner8: 0.9400, kobe: 0.8007, crash32: 0.8229, aerial32: 0.7060, traffic: 0.8340, ssim_mean: 0.8249.
+
+2025-01-04 00:17:57,089 - Train_video.py [line: 241] - epoch: [81][  0/100], lr: 0.000400, loss: 0.16052.
+2025-01-04 00:18:34,150 - Train_video.py [line: 252] - epoch: 81, avg_loss: 0.13949, time: 37.65s.
+
+2025-01-04 00:18:37,044 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.9136, runner8: 31.6435, kobe: 28.3763, crash32: 25.9278, aerial32: 23.8595, traffic: 24.0009, psnr_mean: 27.6203.
+
+2025-01-04 00:18:37,044 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8326, runner8: 0.9349, kobe: 0.8267, crash32: 0.8148, aerial32: 0.6889, traffic: 0.8325, ssim_mean: 0.8217.
+
+2025-01-04 00:18:37,621 - Train_video.py [line: 241] - epoch: [82][  0/100], lr: 0.000400, loss: 0.15452.
+2025-01-04 00:19:14,292 - Train_video.py [line: 252] - epoch: 82, avg_loss: 0.13761, time: 37.24s.
+
+2025-01-04 00:19:17,095 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.4706, runner8: 31.2832, kobe: 28.1532, crash32: 26.0180, aerial32: 24.0653, traffic: 24.0242, psnr_mean: 27.5024.
+
+2025-01-04 00:19:17,095 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.7899, runner8: 0.9355, kobe: 0.8106, crash32: 0.8012, aerial32: 0.7017, traffic: 0.8318, ssim_mean: 0.8118.
+
+2025-01-04 00:19:17,664 - Train_video.py [line: 241] - epoch: [83][  0/100], lr: 0.000400, loss: 0.14842.
+2025-01-04 00:19:54,600 - Train_video.py [line: 252] - epoch: 83, avg_loss: 0.13859, time: 37.50s.
+
+2025-01-04 00:19:57,328 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.8185, runner8: 30.6763, kobe: 27.5114, crash32: 26.1361, aerial32: 23.8613, traffic: 24.0137, psnr_mean: 27.5029.
+
+2025-01-04 00:19:57,328 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8308, runner8: 0.9365, kobe: 0.7763, crash32: 0.8353, aerial32: 0.6944, traffic: 0.8361, ssim_mean: 0.8182.
+
+2025-01-04 00:19:57,928 - Train_video.py [line: 241] - epoch: [84][  0/100], lr: 0.000400, loss: 0.12562.
+2025-01-04 00:20:34,109 - Train_video.py [line: 252] - epoch: 84, avg_loss: 0.13544, time: 36.78s.
+
+2025-01-04 00:20:36,856 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.4012, runner8: 31.1978, kobe: 28.0616, crash32: 24.5360, aerial32: 23.8267, traffic: 23.6831, psnr_mean: 26.1177.
+
+2025-01-04 00:20:36,856 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8584, runner8: 0.9380, kobe: 0.8190, crash32: 0.8267, aerial32: 0.6936, traffic: 0.8299, ssim_mean: 0.8276.
+
+2025-01-04 00:20:37,468 - Train_video.py [line: 241] - epoch: [85][  0/100], lr: 0.000400, loss: 0.11040.
+2025-01-04 00:21:13,414 - Train_video.py [line: 252] - epoch: 85, avg_loss: 0.13764, time: 36.56s.
+
+2025-01-04 00:21:16,221 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.5075, runner8: 31.7840, kobe: 28.3164, crash32: 26.1108, aerial32: 24.0522, traffic: 23.9928, psnr_mean: 27.7940.
+
+2025-01-04 00:21:16,222 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8227, runner8: 0.9386, kobe: 0.8095, crash32: 0.8121, aerial32: 0.6994, traffic: 0.8344, ssim_mean: 0.8195.
+
+2025-01-04 00:21:16,813 - Train_video.py [line: 241] - epoch: [86][  0/100], lr: 0.000400, loss: 0.14926.
+2025-01-04 00:21:53,231 - Train_video.py [line: 252] - epoch: 86, avg_loss: 0.13536, time: 37.01s.
+
+2025-01-04 00:21:56,181 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 33.3139, runner8: 31.9235, kobe: 27.6317, crash32: 26.2369, aerial32: 24.1537, traffic: 24.4001, psnr_mean: 27.9433.
+
+2025-01-04 00:21:56,181 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8500, runner8: 0.9380, kobe: 0.7582, crash32: 0.8239, aerial32: 0.6992, traffic: 0.8421, ssim_mean: 0.8185.
+
+2025-01-04 00:21:56,771 - Train_video.py [line: 241] - epoch: [87][  0/100], lr: 0.000400, loss: 0.03876.
+2025-01-04 00:22:33,043 - Train_video.py [line: 252] - epoch: 87, avg_loss: 0.13930, time: 36.86s.
+
+2025-01-04 00:22:35,937 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.0328, runner8: 31.9171, kobe: 28.2968, crash32: 25.9708, aerial32: 24.0362, traffic: 24.2496, psnr_mean: 27.7506.
+
+2025-01-04 00:22:35,937 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8057, runner8: 0.9332, kobe: 0.8029, crash32: 0.8023, aerial32: 0.7021, traffic: 0.8315, ssim_mean: 0.8130.
+
+2025-01-04 00:22:36,536 - Train_video.py [line: 241] - epoch: [88][  0/100], lr: 0.000400, loss: 0.07534.
+2025-01-04 00:23:13,696 - Train_video.py [line: 252] - epoch: 88, avg_loss: 0.13278, time: 37.76s.
+
+2025-01-04 00:23:16,374 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 30.6620, runner8: 31.7617, kobe: 28.0476, crash32: 25.9636, aerial32: 24.1261, traffic: 24.2494, psnr_mean: 27.4684.
+
+2025-01-04 00:23:16,375 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8583, runner8: 0.9391, kobe: 0.7886, crash32: 0.8229, aerial32: 0.7023, traffic: 0.8383, ssim_mean: 0.8249.
+
+2025-01-04 00:23:16,969 - Train_video.py [line: 241] - epoch: [89][  0/100], lr: 0.000400, loss: 0.15489.
+2025-01-04 00:23:53,743 - Train_video.py [line: 252] - epoch: 89, avg_loss: 0.13388, time: 37.37s.
+
+2025-01-04 00:23:56,666 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.3060, runner8: 30.2085, kobe: 27.7504, crash32: 25.7814, aerial32: 23.8996, traffic: 24.3266, psnr_mean: 27.2121.
+
+2025-01-04 00:23:56,666 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8069, runner8: 0.9309, kobe: 0.8317, crash32: 0.8184, aerial32: 0.7095, traffic: 0.8367, ssim_mean: 0.8224.
+
+2025-01-04 00:23:57,264 - Train_video.py [line: 241] - epoch: [90][  0/100], lr: 0.000400, loss: 0.14992.
+2025-01-04 00:24:34,055 - Train_video.py [line: 252] - epoch: 90, avg_loss: 0.13898, time: 37.39s.
+
+2025-01-04 00:24:36,794 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.0975, runner8: 32.0731, kobe: 28.5986, crash32: 26.0908, aerial32: 24.2296, traffic: 24.4005, psnr_mean: 27.9150.
+
+2025-01-04 00:24:36,794 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8377, runner8: 0.9420, kobe: 0.8127, crash32: 0.8358, aerial32: 0.7091, traffic: 0.8440, ssim_mean: 0.8302.
+
+2025-01-04 00:24:37,373 - Train_video.py [line: 241] - epoch: [91][  0/100], lr: 0.000400, loss: 0.14421.
+2025-01-04 00:25:13,766 - Train_video.py [line: 252] - epoch: 91, avg_loss: 0.13323, time: 36.97s.
+
+2025-01-04 00:25:16,553 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.6905, runner8: 31.7281, kobe: 28.5982, crash32: 25.5377, aerial32: 23.8779, traffic: 24.5246, psnr_mean: 27.3262.
+
+2025-01-04 00:25:16,553 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8100, runner8: 0.9399, kobe: 0.8253, crash32: 0.8046, aerial32: 0.7062, traffic: 0.8474, ssim_mean: 0.8222.
+
+2025-01-04 00:25:17,123 - Train_video.py [line: 241] - epoch: [92][  0/100], lr: 0.000400, loss: 0.17635.
+2025-01-04 00:25:53,412 - Train_video.py [line: 252] - epoch: 92, avg_loss: 0.13904, time: 36.86s.
+
+2025-01-04 00:25:56,111 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 33.3024, runner8: 32.2311, kobe: 28.7095, crash32: 26.1961, aerial32: 24.2107, traffic: 24.4274, psnr_mean: 28.1795.
+
+2025-01-04 00:25:56,111 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8405, runner8: 0.9428, kobe: 0.8240, crash32: 0.8242, aerial32: 0.7105, traffic: 0.8409, ssim_mean: 0.8305.
+
+2025-01-04 00:25:56,701 - Train_video.py [line: 241] - epoch: [93][  0/100], lr: 0.000400, loss: 0.14705.
+2025-01-04 00:26:33,331 - Train_video.py [line: 252] - epoch: 93, avg_loss: 0.13189, time: 37.22s.
+
+2025-01-04 00:26:35,967 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.5223, runner8: 31.9896, kobe: 28.7783, crash32: 26.2372, aerial32: 24.2584, traffic: 24.3979, psnr_mean: 28.0306.
+
+2025-01-04 00:26:35,967 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8310, runner8: 0.9411, kobe: 0.8433, crash32: 0.8185, aerial32: 0.7108, traffic: 0.8438, ssim_mean: 0.8314.
+
+2025-01-04 00:26:36,519 - Train_video.py [line: 241] - epoch: [94][  0/100], lr: 0.000400, loss: 0.10283.
+2025-01-04 00:27:12,744 - Train_video.py [line: 252] - epoch: 94, avg_loss: 0.12917, time: 36.77s.
+
+2025-01-04 00:27:15,499 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 25.1437, runner8: 30.6493, kobe: 27.7636, crash32: 24.0441, aerial32: 23.6397, traffic: 23.9042, psnr_mean: 25.8574.
+
+2025-01-04 00:27:15,499 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8743, runner8: 0.9350, kobe: 0.8127, crash32: 0.8466, aerial32: 0.6871, traffic: 0.8352, ssim_mean: 0.8318.
+
+2025-01-04 00:27:16,079 - Train_video.py [line: 241] - epoch: [95][  0/100], lr: 0.000400, loss: 0.13097.
+2025-01-04 00:27:52,332 - Train_video.py [line: 252] - epoch: 95, avg_loss: 0.13233, time: 36.83s.
+
+2025-01-04 00:27:54,977 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.5359, runner8: 32.0643, kobe: 28.7318, crash32: 26.0924, aerial32: 24.2584, traffic: 24.3260, psnr_mean: 27.8348.
+
+2025-01-04 00:27:54,977 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8235, runner8: 0.9432, kobe: 0.8461, crash32: 0.8156, aerial32: 0.7126, traffic: 0.8425, ssim_mean: 0.8306.
+
+2025-01-04 00:27:55,564 - Train_video.py [line: 241] - epoch: [96][  0/100], lr: 0.000400, loss: 0.06273.
+2025-01-04 00:28:32,159 - Train_video.py [line: 252] - epoch: 96, avg_loss: 0.13158, time: 37.18s.
+
+2025-01-04 00:28:35,014 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.6823, runner8: 32.3153, kobe: 29.1066, crash32: 26.2443, aerial32: 24.3208, traffic: 24.2247, psnr_mean: 27.9823.
+
+2025-01-04 00:28:35,014 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8268, runner8: 0.9443, kobe: 0.8461, crash32: 0.7997, aerial32: 0.7171, traffic: 0.8408, ssim_mean: 0.8291.
+
+2025-01-04 00:28:35,568 - Train_video.py [line: 241] - epoch: [97][  0/100], lr: 0.000400, loss: 0.15983.
+2025-01-04 00:29:13,006 - Train_video.py [line: 252] - epoch: 97, avg_loss: 0.13588, time: 37.99s.
+
+2025-01-04 00:29:15,743 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 21.6389, runner8: 29.7388, kobe: 27.9417, crash32: 21.8353, aerial32: 22.7575, traffic: 23.6558, psnr_mean: 24.5947.
+
+2025-01-04 00:29:15,743 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8688, runner8: 0.9377, kobe: 0.8224, crash32: 0.8270, aerial32: 0.7037, traffic: 0.8400, ssim_mean: 0.8333.
+
+2025-01-04 00:29:16,320 - Train_video.py [line: 241] - epoch: [98][  0/100], lr: 0.000400, loss: 0.14666.
+2025-01-04 00:29:54,707 - Train_video.py [line: 252] - epoch: 98, avg_loss: 0.13460, time: 38.96s.
+
+2025-01-04 00:29:57,968 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 18.8406, runner8: 27.1569, kobe: 26.4510, crash32: 19.6250, aerial32: 21.2271, traffic: 22.0599, psnr_mean: 22.5601.
+
+2025-01-04 00:29:57,969 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8209, runner8: 0.9275, kobe: 0.8056, crash32: 0.7920, aerial32: 0.6759, traffic: 0.8172, ssim_mean: 0.8065.
+
+2025-01-04 00:29:58,539 - Train_video.py [line: 241] - epoch: [99][  0/100], lr: 0.000400, loss: 0.13326.
+2025-01-04 00:30:34,976 - Train_video.py [line: 252] - epoch: 99, avg_loss: 0.13935, time: 37.00s.
+
+2025-01-04 00:30:37,959 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.9598, runner8: 32.3694, kobe: 28.9457, crash32: 26.4230, aerial32: 24.4249, traffic: 24.5019, psnr_mean: 28.2708.
+
+2025-01-04 00:30:37,960 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8645, runner8: 0.9447, kobe: 0.8269, crash32: 0.8454, aerial32: 0.7170, traffic: 0.8498, ssim_mean: 0.8414.
+
+2025-01-04 00:30:38,553 - Train_video.py [line: 241] - epoch: [100][  0/100], lr: 0.000400, loss: 0.15350.
+2025-01-04 00:31:14,859 - Train_video.py [line: 252] - epoch: 100, avg_loss: 0.13187, time: 36.90s.
+
+2025-01-04 00:31:17,540 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.8800, runner8: 32.1063, kobe: 28.7062, crash32: 26.3214, aerial32: 24.3146, traffic: 24.1796, psnr_mean: 28.0847.
+
+2025-01-04 00:31:17,541 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8709, runner8: 0.9438, kobe: 0.8187, crash32: 0.8333, aerial32: 0.7113, traffic: 0.8400, ssim_mean: 0.8363.
+
+2025-01-04 00:31:18,149 - Train_video.py [line: 241] - epoch: [101][  0/100], lr: 0.000400, loss: 0.15926.
+2025-01-04 00:31:54,588 - Train_video.py [line: 252] - epoch: 101, avg_loss: 0.13612, time: 37.04s.
+
+2025-01-04 00:31:57,297 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.1296, runner8: 31.9831, kobe: 28.7853, crash32: 25.9960, aerial32: 24.2304, traffic: 24.3378, psnr_mean: 27.7437.
+
+2025-01-04 00:31:57,297 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8724, runner8: 0.9418, kobe: 0.8332, crash32: 0.8439, aerial32: 0.7114, traffic: 0.8428, ssim_mean: 0.8409.
+
+2025-01-04 00:31:57,835 - Train_video.py [line: 241] - epoch: [102][  0/100], lr: 0.000400, loss: 0.11973.
+2025-01-04 00:32:33,829 - Train_video.py [line: 252] - epoch: 102, avg_loss: 0.13577, time: 36.53s.
+
+2025-01-04 00:32:36,571 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.8940, runner8: 31.9193, kobe: 27.7172, crash32: 25.8875, aerial32: 24.2713, traffic: 23.9948, psnr_mean: 27.2807.
+
+2025-01-04 00:32:36,571 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8773, runner8: 0.9426, kobe: 0.7820, crash32: 0.8349, aerial32: 0.7015, traffic: 0.8334, ssim_mean: 0.8286.
+
+2025-01-04 00:32:37,183 - Train_video.py [line: 241] - epoch: [103][  0/100], lr: 0.000400, loss: 0.15002.
+2025-01-04 00:33:14,111 - Train_video.py [line: 252] - epoch: 103, avg_loss: 0.13313, time: 37.54s.
+
+2025-01-04 00:33:16,713 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.5468, runner8: 32.0748, kobe: 28.6783, crash32: 26.2409, aerial32: 24.1996, traffic: 24.2945, psnr_mean: 28.0058.
+
+2025-01-04 00:33:16,713 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8790, runner8: 0.9429, kobe: 0.8388, crash32: 0.8393, aerial32: 0.7049, traffic: 0.8424, ssim_mean: 0.8412.
+
+2025-01-04 00:33:17,293 - Train_video.py [line: 241] - epoch: [104][  0/100], lr: 0.000400, loss: 0.13428.
+2025-01-04 00:33:54,077 - Train_video.py [line: 252] - epoch: 104, avg_loss: 0.13134, time: 37.36s.
+
+2025-01-04 00:33:56,911 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 33.1139, runner8: 32.2776, kobe: 28.6449, crash32: 26.4886, aerial32: 24.3557, traffic: 24.6551, psnr_mean: 28.2560.
+
+2025-01-04 00:33:56,912 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8598, runner8: 0.9450, kobe: 0.8116, crash32: 0.8328, aerial32: 0.7133, traffic: 0.8524, ssim_mean: 0.8358.
+
+2025-01-04 00:33:57,501 - Train_video.py [line: 241] - epoch: [105][  0/100], lr: 0.000400, loss: 0.10559.
+2025-01-04 00:34:34,048 - Train_video.py [line: 252] - epoch: 105, avg_loss: 0.13415, time: 37.13s.
+
+2025-01-04 00:34:36,850 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.4056, runner8: 32.3930, kobe: 28.6607, crash32: 26.1157, aerial32: 24.3641, traffic: 24.4208, psnr_mean: 27.8933.
+
+2025-01-04 00:34:36,850 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8337, runner8: 0.9446, kobe: 0.8139, crash32: 0.8138, aerial32: 0.7162, traffic: 0.8478, ssim_mean: 0.8283.
+
+2025-01-04 00:34:37,469 - Train_video.py [line: 241] - epoch: [106][  0/100], lr: 0.000400, loss: 0.12328.
+2025-01-04 00:35:14,160 - Train_video.py [line: 252] - epoch: 106, avg_loss: 0.13266, time: 37.31s.
+
+2025-01-04 00:35:17,007 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.0724, runner8: 31.0719, kobe: 27.4294, crash32: 25.7445, aerial32: 23.9437, traffic: 23.6008, psnr_mean: 27.1438.
+
+2025-01-04 00:35:17,007 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8310, runner8: 0.9430, kobe: 0.7572, crash32: 0.7978, aerial32: 0.7017, traffic: 0.8331, ssim_mean: 0.8106.
+
+2025-01-04 00:35:17,615 - Train_video.py [line: 241] - epoch: [107][  0/100], lr: 0.000400, loss: 0.13370.
+2025-01-04 00:35:53,970 - Train_video.py [line: 252] - epoch: 107, avg_loss: 0.13428, time: 36.96s.
+
+2025-01-04 00:35:56,775 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.4574, runner8: 32.1460, kobe: 28.8768, crash32: 26.3124, aerial32: 24.4039, traffic: 24.8726, psnr_mean: 28.1782.
+
+2025-01-04 00:35:56,775 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8739, runner8: 0.9436, kobe: 0.8215, crash32: 0.8377, aerial32: 0.7217, traffic: 0.8551, ssim_mean: 0.8423.
+
+2025-01-04 00:35:57,366 - Train_video.py [line: 241] - epoch: [108][  0/100], lr: 0.000400, loss: 0.14346.
+2025-01-04 00:36:33,940 - Train_video.py [line: 252] - epoch: 108, avg_loss: 0.13249, time: 37.16s.
+
+2025-01-04 00:36:36,544 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 29.8908, runner8: 31.9007, kobe: 28.4015, crash32: 25.6741, aerial32: 24.1921, traffic: 24.3771, psnr_mean: 27.4061.
+
+2025-01-04 00:36:36,544 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8477, runner8: 0.9416, kobe: 0.7936, crash32: 0.8232, aerial32: 0.7131, traffic: 0.8423, ssim_mean: 0.8269.
+
+2025-01-04 00:36:37,140 - Train_video.py [line: 241] - epoch: [109][  0/100], lr: 0.000400, loss: 0.13907.
+2025-01-04 00:37:13,345 - Train_video.py [line: 252] - epoch: 109, avg_loss: 0.13390, time: 36.80s.
+
+2025-01-04 00:37:16,057 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 33.1469, runner8: 32.1303, kobe: 28.8234, crash32: 26.5126, aerial32: 24.2821, traffic: 24.4283, psnr_mean: 28.2206.
+
+2025-01-04 00:37:16,057 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8610, runner8: 0.9425, kobe: 0.8266, crash32: 0.8321, aerial32: 0.7064, traffic: 0.8417, ssim_mean: 0.8350.
+
+2025-01-04 00:37:16,621 - Train_video.py [line: 241] - epoch: [110][  0/100], lr: 0.000400, loss: 0.14815.
+2025-01-04 00:37:52,861 - Train_video.py [line: 252] - epoch: 110, avg_loss: 0.13302, time: 36.80s.
+
+2025-01-04 00:37:55,499 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.4437, runner8: 32.6324, kobe: 28.9775, crash32: 26.4171, aerial32: 24.4149, traffic: 25.1539, psnr_mean: 28.3399.
+
+2025-01-04 00:37:55,499 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8699, runner8: 0.9467, kobe: 0.8190, crash32: 0.8378, aerial32: 0.7167, traffic: 0.8619, ssim_mean: 0.8420.
+
+2025-01-04 00:37:56,088 - Train_video.py [line: 241] - epoch: [111][  0/100], lr: 0.000400, loss: 0.14296.
+2025-01-04 00:38:32,042 - Train_video.py [line: 252] - epoch: 111, avg_loss: 0.13032, time: 36.54s.
+
+2025-01-04 00:38:34,913 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.6444, runner8: 32.4503, kobe: 29.0370, crash32: 26.3640, aerial32: 24.3589, traffic: 24.5316, psnr_mean: 28.2310.
+
+2025-01-04 00:38:34,913 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8608, runner8: 0.9466, kobe: 0.8361, crash32: 0.8309, aerial32: 0.7201, traffic: 0.8510, ssim_mean: 0.8409.
+
+2025-01-04 00:38:35,475 - Train_video.py [line: 241] - epoch: [112][  0/100], lr: 0.000400, loss: 0.15023.
+2025-01-04 00:39:12,398 - Train_video.py [line: 252] - epoch: 112, avg_loss: 0.13012, time: 37.48s.
+
+2025-01-04 00:39:15,209 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.8572, runner8: 32.4749, kobe: 28.4326, crash32: 26.2016, aerial32: 24.3027, traffic: 24.5585, psnr_mean: 27.9713.
+
+2025-01-04 00:39:15,209 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8490, runner8: 0.9464, kobe: 0.7945, crash32: 0.8257, aerial32: 0.7171, traffic: 0.8472, ssim_mean: 0.8300.
+
+2025-01-04 00:39:15,801 - Train_video.py [line: 241] - epoch: [113][  0/100], lr: 0.000400, loss: 0.12352.
+2025-01-04 00:39:52,442 - Train_video.py [line: 252] - epoch: 113, avg_loss: 0.13278, time: 37.23s.
+
+2025-01-04 00:39:55,286 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 32.5881, runner8: 32.2984, kobe: 28.6959, crash32: 26.3715, aerial32: 24.3728, traffic: 24.5603, psnr_mean: 28.1478.
+
+2025-01-04 00:39:55,286 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8160, runner8: 0.9449, kobe: 0.8151, crash32: 0.8187, aerial32: 0.7198, traffic: 0.8490, ssim_mean: 0.8273.
+
+2025-01-04 00:39:55,859 - Train_video.py [line: 241] - epoch: [114][  0/100], lr: 0.000400, loss: 0.14690.
+2025-01-04 00:40:32,339 - Train_video.py [line: 252] - epoch: 114, avg_loss: 0.13056, time: 37.05s.
+
+2025-01-04 00:40:34,937 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.4102, runner8: 32.2276, kobe: 28.9731, crash32: 26.3198, aerial32: 24.4810, traffic: 24.5784, psnr_mean: 27.9984.
+
+2025-01-04 00:40:34,938 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8622, runner8: 0.9422, kobe: 0.8333, crash32: 0.8343, aerial32: 0.7283, traffic: 0.8494, ssim_mean: 0.8416.
+
+2025-01-04 00:40:35,531 - Train_video.py [line: 241] - epoch: [115][  0/100], lr: 0.000400, loss: 0.12429.
+2025-01-04 00:41:12,074 - Train_video.py [line: 252] - epoch: 115, avg_loss: 0.13236, time: 37.13s.
+
+2025-01-04 00:41:14,946 - Train_video.py [line: 275] - Mean PSNR: 
+drop8: 31.8890, runner8: 32.2438, kobe: 28.9067, crash32: 26.3750, aerial32: 24.4036, traffic: 24.9008, psnr_mean: 28.1198.
+
+2025-01-04 00:41:14,946 - Train_video.py [line: 276] - Mean SSIM: 
+drop8: 0.8751, runner8: 0.9458, kobe: 0.8367, crash32: 0.8334, aerial32: 0.7165, traffic: 0.8575, ssim_mean: 0.8442.
+
+2025-01-04 00:41:15,535 - Train_video.py [line: 241] - epoch: [116][  0/100], lr: 0.000400, loss: 0.15185.
